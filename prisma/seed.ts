@@ -1,13 +1,22 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
-import { createClient } from "@libsql/client";
 import bcrypt from "bcryptjs";
 import { classifyExpense } from "../src/services/expense-classification.service";
 import path from "path";
 
-const dbPath = path.resolve(__dirname, "../dev.db");
-const adapter = new PrismaLibSql({ url: `file:${dbPath}` });
-const prisma = new PrismaClient({ adapter } as never);
+function createClient(): PrismaClient {
+  const dbUrl = process.env.DATABASE_URL ?? "";
+  if (dbUrl.startsWith("postgres")) {
+    const { PrismaPg } = require("@prisma/adapter-pg");
+    const { Pool } = require("pg");
+    const pool = new Pool({ connectionString: dbUrl });
+    return new PrismaClient({ adapter: new PrismaPg(pool) } as never);
+  }
+  const { PrismaLibSql } = require("@prisma/adapter-libsql");
+  const dbPath = path.resolve(__dirname, "../dev.db");
+  return new PrismaClient({ adapter: new PrismaLibSql({ url: `file:${dbPath}` }) } as never);
+}
+
+const prisma = createClient();
 
 const SUPPLIERS = [
   { name: "Microsoft Yazılım A.Ş.", tax: "1234567890", net: 2490, vat: 448, desc: "Microsoft 365 Aboneliği" },

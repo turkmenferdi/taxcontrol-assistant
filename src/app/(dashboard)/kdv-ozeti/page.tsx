@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { useLanguage } from "@/contexts/language-context";
 
 interface VatData {
   summary: {
@@ -18,6 +19,7 @@ interface VatData {
 }
 
 export default function KdvOzetiPage() {
+  const { t } = useLanguage();
   const [data, setData] = useState<VatData | null>(null);
   const [loading, setLoading] = useState(true);
   const now = new Date();
@@ -37,7 +39,7 @@ export default function KdvOzetiPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">KDV Özeti</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t.vatTitle}</h1>
         <input
           type="month"
           value={month}
@@ -47,53 +49,43 @@ export default function KdvOzetiPage() {
       </div>
 
       <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
-        ⚠️ Bu özet tahmini bir ön kontrol raporudur. Kesin KDV beyanı ve yasal sorumluluk muhatap ve sertifikalı muhasebeciye aittir.
+        {t.vatWarning}
       </div>
 
       {loading ? (
         <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>
       ) : !data ? (
-        <p className="text-gray-500">Veri bulunamadı.</p>
+        <p className="text-gray-500">{t.vatNoData}</p>
       ) : (
         <div className="space-y-6">
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
               <h2 className="font-semibold text-gray-700">
-                {formatDate(data.startDate)} – {formatDate(data.endDate)} Dönemi KDV Hesaplama
+                {t.vatPeriod(formatDate(data.startDate), formatDate(data.endDate))}
               </h2>
             </div>
             <div className="p-6 space-y-3">
-              <Row label="Satış Matrahı (Net)" value={formatCurrency(data.summary.outgoingNetTotal)} />
-              <Row label="Hesaplanan KDV (Satışlardan)" value={formatCurrency(data.summary.outgoingVatTotal)} highlight="blue" />
+              <Row label={t.vatSalesBase} value={formatCurrency(data.summary.outgoingNetTotal)} />
+              <Row label={t.vatCalculated} value={formatCurrency(data.summary.outgoingVatTotal)} highlight="blue" />
               <div className="border-t pt-3">
-                <Row label="Alış Matrahı (Net)" value={formatCurrency(data.summary.incomingNetTotal)} />
-                <Row label="İndirilecek KDV (Alışlardan)" value={formatCurrency(data.summary.deductibleVatTotal)} highlight="green" />
-                <Row label="İndirilemeyen KDV" value={formatCurrency(data.summary.nonDeductibleVatTotal)} highlight="red" />
+                <Row label={t.vatPurchaseBase} value={formatCurrency(data.summary.incomingNetTotal)} />
+                <Row label={t.vatDeductible} value={formatCurrency(data.summary.deductibleVatTotal)} highlight="green" />
+                <Row label={t.vatNonDeductible} value={formatCurrency(data.summary.nonDeductibleVatTotal)} highlight="red" />
               </div>
               <div className="border-t border-gray-300 pt-3 mt-2">
                 {data.summary.estimatedPayableVat > 0 ? (
-                  <Row
-                    label="Tahmini Ödenecek KDV"
-                    value={formatCurrency(data.summary.estimatedPayableVat)}
-                    highlight="red"
-                    bold
-                  />
+                  <Row label={t.vatPayable} value={formatCurrency(data.summary.estimatedPayableVat)} highlight="red" bold />
                 ) : (
-                  <Row
-                    label="Tahmini Devreden KDV"
-                    value={formatCurrency(data.summary.estimatedCarryForwardVat)}
-                    highlight="green"
-                    bold
-                  />
+                  <Row label={t.vatCarryForward} value={formatCurrency(data.summary.estimatedCarryForwardVat)} highlight="green" bold />
                 )}
               </div>
             </div>
           </div>
 
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-700">
-            <strong>Formül:</strong> Ödenecek KDV = Hesaplanan KDV − İndirilecek KDV
+            <strong>{t.vatFormula}</strong>
             <br />
-            Muhasebeci onayı bekleyen faturalardaki KDV bu hesaba dahil edilmemiştir. Onay sonrası rakamlar değişebilir.
+            {t.vatNote}
           </div>
         </div>
       )}

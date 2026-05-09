@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatCurrency } from "@/lib/utils";
+import { useLanguage } from "@/contexts/language-context";
 
 interface ProvisionalData {
   summary: {
@@ -16,6 +17,7 @@ interface ProvisionalData {
 }
 
 export default function GeciciVergiPage() {
+  const { t } = useLanguage();
   const [data, setData] = useState<ProvisionalData | null>(null);
   const [loading, setLoading] = useState(true);
   const now = new Date();
@@ -33,7 +35,7 @@ export default function GeciciVergiPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Geçici Vergi Tahmini</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t.provTitle}</h1>
         <div className="flex items-center gap-3">
           <select value={year} onChange={(e) => setYear(Number(e.target.value))}
             className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -41,44 +43,42 @@ export default function GeciciVergiPage() {
           </select>
           <select value={quarter} onChange={(e) => setQuarter(Number(e.target.value))}
             className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            {[1, 2, 3, 4].map(q => <option key={q} value={q}>{q}. Çeyrek</option>)}
+            {[1, 2, 3, 4].map(q => <option key={q} value={q}>{t.quarter(q)}</option>)}
           </select>
         </div>
       </div>
 
       <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
-        ⚠️ Bu hesaplama tahmini bir ön kontrol aracıdır. Kesin geçici vergi beyanı ve yasal sorumluluk muhatap ve sertifikalı muhasebeciye aittir.
+        {t.provWarning}
       </div>
 
       {loading ? (
         <div className="flex justify-center py-16"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>
       ) : !data ? (
-        <p className="text-gray-500">Veri bulunamadı.</p>
+        <p className="text-gray-500">{t.provNoData}</p>
       ) : (
         <div className="space-y-6">
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
               <h2 className="font-semibold text-gray-700">
-                {data.year} Yılı {data.quarter}. Çeyrek Geçici Vergi Tahmini
+                {t.quarterPeriod(data.year, data.quarter)}
               </h2>
             </div>
             <div className="p-6 space-y-3">
-              <Row label="Toplam Ciro (Satış Hasılatı)" value={formatCurrency(data.summary.revenue)} />
-              <Row label="İndirilebilir Giderler" value={`- ${formatCurrency(data.summary.deductibleExpenses)}`} highlight="green" />
+              <Row label={t.provRevenue} value={formatCurrency(data.summary.revenue)} />
+              <Row label={t.provExpenses} value={`- ${formatCurrency(data.summary.deductibleExpenses)}`} highlight="green" />
               <div className="border-t pt-3">
-                <Row label="Tahmini Kâr (Matrah)" value={formatCurrency(data.summary.estimatedProfit)} highlight="blue" bold />
+                <Row label={t.provProfit} value={formatCurrency(data.summary.estimatedProfit)} highlight="blue" bold />
               </div>
               <div className="border-t pt-3">
-                <Row label={`Geçici Vergi Oranı`} value={`%${(data.summary.taxRate * 100).toFixed(0)}`} />
-                <Row label="Tahmini Geçici Vergi" value={formatCurrency(data.summary.estimatedProvisionalTax)} highlight="red" bold />
+                <Row label={t.provTaxRate(Math.round(data.summary.taxRate * 100))} value={`${(data.summary.taxRate * 100).toFixed(0)}%`} />
+                <Row label={t.provTax} value={formatCurrency(data.summary.estimatedProvisionalTax)} highlight="red" bold />
               </div>
             </div>
           </div>
 
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-700">
-            <strong>Formül:</strong> Geçici Vergi = (Toplam Satış − İndirilebilir Giderler) × Vergi Oranı
-            <br />
-            Muhasebeci onayı bekleyen giderler bu hesaba dahil edilmemiştir. Vergi oranı şirket tipine ve yıla göre Ayarlar'dan güncellenebilir.
+            {t.provNote}
           </div>
         </div>
       )}

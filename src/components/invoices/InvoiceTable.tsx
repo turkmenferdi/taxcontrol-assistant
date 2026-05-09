@@ -5,6 +5,7 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import ClassificationBadge from "./ClassificationBadge";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import ReviewModal from "./ReviewModal";
+import { useLanguage } from "@/contexts/language-context";
 
 interface Invoice {
   id: string;
@@ -30,16 +31,24 @@ interface Props {
   direction?: string;
   riskyOnly?: boolean;
   reviewOnly?: boolean;
-  title: string;
 }
 
-export default function InvoiceTable({ direction, riskyOnly, reviewOnly, title }: Props) {
+export default function InvoiceTable({ direction, riskyOnly, reviewOnly }: Props) {
+  const { t } = useLanguage();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Invoice | null>(null);
+
+  const title = riskyOnly
+    ? t.riskyTitle
+    : reviewOnly
+    ? t.reviewTitle
+    : direction === "outgoing"
+    ? t.outgoingTitle
+    : t.incomingTitle;
 
   const fetchInvoices = useCallback(async () => {
     setLoading(true);
@@ -87,7 +96,7 @@ export default function InvoiceTable({ direction, riskyOnly, reviewOnly, title }
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Ara..."
+            placeholder={t.search}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
@@ -100,16 +109,16 @@ export default function InvoiceTable({ direction, riskyOnly, reviewOnly, title }
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left px-4 py-3 font-medium text-gray-500">Tarih</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500">Fatura No</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-500">{t.date}</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-500">{t.invoiceNo}</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-500">
-                  {direction === "outgoing" ? "Müşteri" : "Tedarikçi"}
+                  {direction === "outgoing" ? t.customer : t.supplier}
                 </th>
-                <th className="text-right px-4 py-3 font-medium text-gray-500">Net Tutar</th>
-                <th className="text-right px-4 py-3 font-medium text-gray-500">KDV</th>
-                <th className="text-right px-4 py-3 font-medium text-gray-500">Brüt Tutar</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-500">{t.netAmount}</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-500">{t.vat}</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-500">{t.grossAmount}</th>
                 {direction !== "outgoing" && (
-                  <th className="text-left px-4 py-3 font-medium text-gray-500">Sınıflandırma</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-500">{t.classification}</th>
                 )}
                 <th className="px-4 py-3"></th>
               </tr>
@@ -123,7 +132,7 @@ export default function InvoiceTable({ direction, riskyOnly, reviewOnly, title }
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-12 text-gray-400">Fatura bulunamadı.</td>
+                  <td colSpan={8} className="text-center py-12 text-gray-400">{t.noInvoices}</td>
                 </tr>
               ) : (
                 filtered.map((inv) => (
@@ -150,7 +159,7 @@ export default function InvoiceTable({ direction, riskyOnly, reviewOnly, title }
                           onClick={() => setSelected(inv)}
                           className="text-xs text-blue-600 hover:underline"
                         >
-                          İncele
+                          {t.review}
                         </button>
                       )}
                     </td>
@@ -163,7 +172,7 @@ export default function InvoiceTable({ direction, riskyOnly, reviewOnly, title }
 
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
-            <p className="text-sm text-gray-500">Toplam {total} fatura</p>
+            <p className="text-sm text-gray-500">{t.totalInvoices(total)}</p>
             <div className="flex items-center gap-2">
               <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="p-1 rounded hover:bg-gray-100 disabled:opacity-40">
                 <ChevronLeft className="w-4 h-4" />

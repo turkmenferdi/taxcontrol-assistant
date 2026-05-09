@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { FileSpreadsheet, FileText, Download } from "lucide-react";
+import { useLanguage } from "@/contexts/language-context";
 
 export default function RaporlarPage() {
+  const { t } = useLanguage();
   const [month, setMonth] = useState(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -32,16 +34,16 @@ export default function RaporlarPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Raporlar</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">{t.reportsTitle}</h1>
 
       <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
-        Bu raporlar tahmini ön-kontrol raporlarıdır. Kesin vergi muamelesi ve beyan sorumluluğu mükellef ve sertifikalı muhasebeciye aittir.
+        {t.reportsWarning}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <ReportCard
-          title="Gelen Fatura Listesi"
-          description="Seçili aya ait tüm gelen faturalar ve sınıflandırmaları"
+          title={t.reportIncoming}
+          description={t.reportIncomingDesc}
           icon={FileSpreadsheet}
           color="blue"
           controls={
@@ -50,11 +52,12 @@ export default function RaporlarPage() {
           }
           onDownload={() => download("invoices", { direction: "incoming", month: `${y}-${m}` })}
           loading={downloading === "invoices-incoming"}
+          downloadLabel={downloading === "invoices-incoming" ? t.downloading : t.downloadExcel}
         />
 
         <ReportCard
-          title="Giden Fatura Listesi"
-          description="Seçili aya ait tüm giden faturalar"
+          title={t.reportOutgoing}
+          description={t.reportOutgoingDesc}
           icon={FileSpreadsheet}
           color="purple"
           controls={
@@ -63,11 +66,12 @@ export default function RaporlarPage() {
           }
           onDownload={() => download("invoices", { direction: "outgoing", month: `${y}-${m}` })}
           loading={downloading === "invoices-outgoing"}
+          downloadLabel={downloading === "invoices-outgoing" ? t.downloading : t.downloadExcel}
         />
 
         <ReportCard
-          title="Aylık KDV Özeti"
-          description="Hesaplanan KDV, İndirilecek KDV ve Ödenecek KDV tahmini"
+          title={t.reportVat}
+          description={t.reportVatDesc}
           icon={FileSpreadsheet}
           color="green"
           controls={
@@ -76,11 +80,12 @@ export default function RaporlarPage() {
           }
           onDownload={() => download("vat-summary", { month: `${y}-${m}` })}
           loading={downloading === "vat-summary"}
+          downloadLabel={downloading === "vat-summary" ? t.downloading : t.downloadExcel}
         />
 
         <ReportCard
-          title="Geçici Vergi Tahmini"
-          description="Çeyreklik ciro, gider ve tahmini geçici vergi raporu"
+          title={t.reportProvisional}
+          description={t.reportProvDesc}
           icon={FileText}
           color="orange"
           controls={
@@ -91,21 +96,22 @@ export default function RaporlarPage() {
               </select>
               <select value={quarter} onChange={(e) => setQuarter(Number(e.target.value))}
                 className="border border-gray-200 rounded px-2 py-1 text-sm">
-                {[1, 2, 3, 4].map(q => <option key={q} value={q}>{q}. Çeyrek</option>)}
+                {[1, 2, 3, 4].map(q => <option key={q} value={q}>Q{q}</option>)}
               </select>
             </div>
           }
           onDownload={() => download("provisional-tax", { year: String(year), quarter: String(quarter) })}
           loading={downloading === "provisional-tax"}
+          downloadLabel={downloading === "provisional-tax" ? t.downloading : t.downloadExcel}
         />
       </div>
     </div>
   );
 }
 
-function ReportCard({ title, description, icon: Icon, color, controls, onDownload, loading }: {
+function ReportCard({ title, description, icon: Icon, color, controls, onDownload, loading, downloadLabel }: {
   title: string; description: string; icon: typeof FileSpreadsheet;
-  color: string; controls: React.ReactNode; onDownload: () => void; loading: boolean;
+  color: string; controls: React.ReactNode; onDownload: () => void; loading: boolean; downloadLabel: string;
 }) {
   const colorMap: Record<string, string> = {
     blue: "bg-blue-100 text-blue-600", purple: "bg-purple-100 text-purple-600",
@@ -124,7 +130,7 @@ function ReportCard({ title, description, icon: Icon, color, controls, onDownloa
           <button onClick={onDownload} disabled={loading}
             className="mt-3 flex items-center gap-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-60">
             <Download className="w-4 h-4" />
-            {loading ? "İndiriliyor..." : "Excel İndir"}
+            {downloadLabel}
           </button>
         </div>
       </div>
