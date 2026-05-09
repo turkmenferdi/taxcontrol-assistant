@@ -43,7 +43,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ type
       ["Firma:", company.name, "", "Dönem:", `${formatDate(startDate)} - ${formatDate(endDate)}`],
       [],
       ["Tarih", "Fatura No", "Tedarikçi/Müşteri", "Net Tutar", "KDV", "Brüt Tutar", "Sınıflandırma", "Muhasebeci Kararı", "Not"],
-      ...invoices.map((i) => [
+      ...invoices.map((i: typeof invoices[0]) => [
         formatDate(i.invoiceDate),
         i.invoiceNumber ?? "",
         direction === "incoming" ? i.supplierName : i.customerName,
