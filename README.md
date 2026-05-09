@@ -1,36 +1,170 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TaxControl — AI-Destekli e-Fatura & Vergi Kontrol Asistanı
 
-## Getting Started
+KOBİ'ler, freelancer'lar ve muhasebeciler için tahmini KDV ve geçici vergi ön kontrol uygulaması.
 
-First, run the development server:
+> **Yasal Uyarı:** Bu uygulama tahmini bir ön-kontrol aracıdır. Kesin vergi beyanı ve yasal sorumluluk mükellef ve sertifikalı muhasebeciye aittir.
+
+---
+
+## Özellikler
+
+- Dashboard: Aylık KDV özeti, çeyreklik geçici vergi tahmini, risk sayaçları
+- Gelen / Giden Fatura listeleri (filtreleme, arama)
+- Otomatik gider sınıflandırma motoru (kural tabanlı)
+- KDV Özeti: Hesaplanan KDV – İndirilecek KDV → Ödenecek/Devreden KDV
+- Geçici Vergi Tahmini: Çeyreklik kâr × vergi oranı
+- Muhasebeci inceleme iş akışı (nihai karar ve not)
+- Excel rapor indirme (fatura listesi, KDV özeti, geçici vergi)
+- Temiz adaptör mimarisi: Mock provider + İşNet NetteFatura iskelet entegrasyonu
+
+---
+
+## Hızlı Başlangıç
+
+### 1. Bağımlılıkları Yükle
+
+```bash
+cd taxcontrol
+npm install
+```
+
+### 2. Ortam Değişkenleri
+
+`.env` dosyası zaten oluşturulmuştur. Gerekirse güncelleyin:
+
+```env
+DATABASE_URL="file:./dev.db"
+NEXTAUTH_SECRET="guclu-bir-gizli-anahtar-degistirin"
+NEXTAUTH_URL="http://localhost:3000"
+```
+
+### 3. Veritabanı Oluştur ve Seed Verisi Yükle
+
+```bash
+npx prisma migrate dev --name init
+npx prisma db seed
+```
+
+### 4. Geliştirme Sunucusunu Başlat
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Uygulama http://localhost:3000 adresinde çalışır.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 5. Demo Giriş
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+Email:    demo@taxcontrol.io
+Sifre:    demo1234
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Proje Yapısı
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+taxcontrol/
+├── prisma/
+│   ├── schema.prisma          # Veritabanı şeması
+│   ├── seed.ts                # Demo verisi
+│   └── migrations/            # Prisma migration dosyaları
+├── src/
+│   ├── app/
+│   │   ├── (auth)/login/      # Giriş sayfası
+│   │   ├── (dashboard)/       # Ana uygulama sayfaları
+│   │   │   ├── page.tsx                  # Dashboard
+│   │   │   ├── gelen-faturalar/          # Gelen faturalar
+│   │   │   ├── giden-faturalar/          # Giden faturalar
+│   │   │   ├── riskli-giderler/          # Riskli giderler
+│   │   │   ├── kdv-ozeti/                # KDV özeti
+│   │   │   ├── gecici-vergi/             # Geçici vergi tahmini
+│   │   │   ├── raporlar/                 # Rapor indirme
+│   │   │   └── ayarlar/                  # Firma ayarları
+│   │   └── api/
+│   │       ├── auth/          # Login, register, logout, me
+│   │       ├── company/       # Firma CRUD
+│   │       ├── invoices/      # Fatura listesi ve detay
+│   │       ├── tax/           # KDV, geçici vergi, dashboard
+│   │       ├── provider/sync/ # Fatura senkronizasyonu
+│   │       └── reports/       # Excel rapor indirme
+│   ├── components/
+│   │   ├── layout/Sidebar.tsx
+│   │   ├── dashboard/KPICard.tsx
+│   │   └── invoices/          # InvoiceTable, ReviewModal, ClassificationBadge
+│   ├── lib/
+│   │   ├── prisma.ts          # Prisma client (libSQL adapter)
+│   │   ├── auth.ts            # Session yönetimi (cookie tabanlı)
+│   │   └── utils.ts           # Yardımcı fonksiyonlar
+│   ├── services/
+│   │   ├── expense-classification.service.ts  # Kural tabanlı gider sınıflandırma
+│   │   ├── tax-calculation.service.ts         # KDV ve geçici vergi hesaplama
+│   │   └── invoice-sync.service.ts            # Fatura senkronizasyonu
+│   ├── providers/
+│   │   ├── base-provider.ts      # Soyut adaptör arayüzü
+│   │   ├── mock-provider.ts      # Demo/test mock sağlayıcı
+│   │   ├── isnet-provider.ts     # İşNet NetteFatura iskelet (TODO'lar ile)
+│   │   └── provider-factory.ts   # Sağlayıcı fabrikası
+│   └── middleware.ts             # Auth yönlendirme middleware
+└── prisma.config.ts              # Prisma 7 konfigürasyonu
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## İşNet NetteFatura Entegrasyonu
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+`src/providers/isnet-provider.ts` dosyası, İşNet API detaylarının doğrulanmasını bekleyen
+TODO yorumları ile birlikte iskelet halinde hazırlanmıştır.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Entegrasyonu tamamlamak için:
+1. İşNet NetteFatura API dokümantasyonunu edinin
+2. `isnet-provider.ts` içindeki TODO yorumlarını takip edin
+3. Ayarlar sayfasından sağlayıcıyı "İşNet NetteFatura" olarak seçin
+4. Firma ayarlarına API kimlik bilgilerini ekleyin
+
+Yeni sağlayıcı eklemek için (Paraşüt, Logo vb.):
+1. `BaseInvoiceProvider`ı extend eden yeni bir sınıf oluşturun
+2. `provider-factory.ts`e yeni sağlayıcıyı ekleyin
+
+---
+
+## Gider Sınıflandırma Motoru
+
+`src/services/expense-classification.service.ts` kural tabanlı motor içerir.
+
+Sınıflandırma kategorileri:
+- `deductible` — İndirilebilir
+- `non_deductible` — İndirilemez
+- `partially_deductible` — Kısmen İndirilebilir
+- `accountant_review_required` — Muhasebeci Onayı Gerekli
+
+Her sınıflandırma için Türkçe açıklama üretilir. Motor kesin yasal iddia yapmaz.
+
+---
+
+## Vergi Oranları
+
+`TaxRate` tablosundan okunur (yıl ve şirket tipine göre). Seed verisi 2025-2026 için:
+- Şahıs şirketi: %15
+- Limited şirket: %25
+
+Oranlar veritabanından güncellenebilir (hardcode değil).
+
+---
+
+## PostgreSQL Geçişi
+
+1. `prisma.config.ts` içindeki `datasource.url`yi PostgreSQL bağlantı dizisi ile güncelleyin
+2. `@prisma/adapter-libsql` yerine `@prisma/adapter-pg` ve `pg` paketlerini yükleyin
+3. `src/lib/prisma.ts`i yeni adaptörü kullanacak şekilde güncelleyin
+4. `npx prisma migrate dev` çalıştırın
+
+---
+
+## Güvenlik Notları
+
+- Sağlayıcı şifreleri frontend'e gönderilmez (sunucu taraflı API routes)
+- `providerConfig` alanı üretimde şifrelenmelidir (TODO işareti mevcuttur)
+- Session cookie `httpOnly` ve `sameSite: lax` ile korunmaktadır
+- API base URL ve sırlar `.env` dosyasında tutulur
