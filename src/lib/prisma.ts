@@ -1,10 +1,21 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
 import path from "path";
 
-function createPrismaClient() {
-  const rawUrl = process.env.DATABASE_URL ?? "file:./dev.db";
-  // Convert relative "file:./" URL to absolute path for libSQL
+function createPrismaClient(): PrismaClient {
+  const dbUrl = process.env.DATABASE_URL ?? "";
+
+  // PostgreSQL (Vercel/production)
+  if (dbUrl.startsWith("postgres") || dbUrl.startsWith("postgresql")) {
+    const { PrismaPg } = require("@prisma/adapter-pg");
+    const { Pool } = require("pg");
+    const pool = new Pool({ connectionString: dbUrl });
+    const adapter = new PrismaPg(pool);
+    return new PrismaClient({ adapter } as never);
+  }
+
+  // SQLite via libSQL (local development)
+  const { PrismaLibSql } = require("@prisma/adapter-libsql");
+  const rawUrl = dbUrl || "file:./dev.db";
   const url = rawUrl.startsWith("file:./")
     ? `file:${path.resolve(process.cwd(), rawUrl.slice(7))}`
     : rawUrl;
