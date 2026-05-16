@@ -165,6 +165,25 @@ const tr = {
   savedOk: "Ayarlar kaydedildi.",
   saveError: "Kaydetme hatası.",
   saveBtn: "Kaydet",
+
+  // Import
+  importIncomingTitle: "Gelen Fatura İçe Aktar",
+  importOutgoingTitle: "Giden Fatura İçe Aktar",
+  importDesc: "Excel (.xlsx, .xls) veya CSV dosyasından fatura içe aktarın. Sütun başlıkları otomatik algılanır.",
+  importDropzone: "Dosya seçmek için tıklayın veya sürükleyin",
+  importSupportedHeaders: "Desteklenen sütun başlıkları:",
+  importDownloadTemplate: "Örnek şablon indir",
+  importPreviewNote: "İlk 5 satır önizlemesi:",
+  importPreviewOnly: "Önizleme ilk 5 satırı gösterir. Tüm satırlar içe aktarılacak.",
+  importBtn: "İçe Aktar",
+  importingLabel: "Aktarılıyor...",
+  importDone: "İçe Aktarma Tamamlandı",
+  importCreated: "Eklendi",
+  importSkipped: "Atlandı",
+  importErrors: "Hata",
+  importNoRows: "Dosyadan fatura okunamadı. Sütun başlıklarını kontrol edin.",
+  importParseError: "Dosya okunamadı. Geçerli bir Excel veya CSV dosyası seçin.",
+  importBtnLabel: "Excel İçe Aktar",
 };
 
 const en: typeof tr = {
@@ -322,6 +341,25 @@ const en: typeof tr = {
   savedOk: "Settings saved.",
   saveError: "Save error.",
   saveBtn: "Save",
+
+  // Import
+  importIncomingTitle: "Import Incoming Invoices",
+  importOutgoingTitle: "Import Outgoing Invoices",
+  importDesc: "Import invoices from an Excel (.xlsx, .xls) or CSV file. Column headers are auto-detected.",
+  importDropzone: "Click to select a file or drag and drop",
+  importSupportedHeaders: "Supported column headers:",
+  importDownloadTemplate: "Download sample template",
+  importPreviewNote: "Preview of first 5 rows:",
+  importPreviewOnly: "Preview shows first 5 rows. All rows will be imported.",
+  importBtn: "Import",
+  importingLabel: "Importing...",
+  importDone: "Import Complete",
+  importCreated: "Added",
+  importSkipped: "Skipped",
+  importErrors: "Errors",
+  importNoRows: "No invoices found in file. Check column headers.",
+  importParseError: "Could not read file. Please select a valid Excel or CSV file.",
+  importBtnLabel: "Import Excel",
 };
 
 export const translations: Record<Lang, typeof tr> = { tr, en };
