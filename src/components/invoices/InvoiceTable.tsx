@@ -31,9 +31,10 @@ interface Props {
   direction?: string;
   riskyOnly?: boolean;
   reviewOnly?: boolean;
+  companyId?: string;
 }
 
-export default function InvoiceTable({ direction, riskyOnly, reviewOnly }: Props) {
+export default function InvoiceTable({ direction, riskyOnly, reviewOnly, companyId }: Props) {
   const { t } = useLanguage();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [total, setTotal] = useState(0);
@@ -54,6 +55,7 @@ export default function InvoiceTable({ direction, riskyOnly, reviewOnly }: Props
     setLoading(true);
     const params = new URLSearchParams({ page: String(page), limit: "20" });
     if (direction) params.set("direction", direction);
+    if (companyId) params.set("companyId", companyId);
     const res = await fetch(`/api/invoices?${params}`);
     if (res.ok) {
       const data = await res.json();

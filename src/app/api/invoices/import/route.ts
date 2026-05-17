@@ -8,12 +8,22 @@ export async function POST(req: NextRequest) {
   const session = await getSession();
   if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-  const company = session.user.company;
-  if (!company) return Response.json({ error: "Firma bulunamadı" }, { status: 400 });
-
   const formData = await req.formData();
   const file = formData.get("file") as File | null;
   const direction = (formData.get("direction") as string) || "incoming";
+  const requestedCompanyId = formData.get("companyId") as string | null;
+
+  let company;
+  if (requestedCompanyId && session.user.role === "accountant") {
+    const access = await prisma.companyAccess.findUnique({
+      where: { userId_companyId: { userId: session.user.id, companyId: requestedCompanyId } },
+    });
+    if (!access) return Response.json({ error: "Erişim reddedildi" }, { status: 403 });
+    company = await prisma.company.findUnique({ where: { id: requestedCompanyId } });
+  } else {
+    company = session.user.company;
+  }
+  if (!company) return Response.json({ error: "Firma bulunamadı" }, { status: 400 });
 
   if (!file) return Response.json({ error: "Dosya bulunamadı" }, { status: 400 });
 

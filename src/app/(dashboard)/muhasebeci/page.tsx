@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLanguage } from "@/contexts/language-context";
-import { Building2, FileText, AlertTriangle, TrendingUp, RefreshCw } from "lucide-react";
+import { Building2, FileText, AlertTriangle, TrendingUp, RefreshCw, Search, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 interface ClientSummary {
@@ -34,6 +34,7 @@ export default function MuhasebecPage() {
   const { t } = useLanguage();
   const [data, setData] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   async function load() {
     setLoading(true);
@@ -43,6 +44,18 @@ export default function MuhasebecPage() {
   }
 
   useEffect(() => { load(); }, []);
+
+  const filtered = useMemo(() => {
+    if (!data) return [];
+    const q = search.trim().toLowerCase();
+    if (!q) return data.clients;
+    return data.clients.filter(
+      (c) =>
+        c.company.name.toLowerCase().includes(q) ||
+        c.company.taxNumber.includes(q) ||
+        c.company.user.email.toLowerCase().includes(q)
+    );
+  }, [data, search]);
 
   if (loading) {
     return <div className="p-8 text-center text-gray-400 text-sm">{t.loading}</div>;
@@ -96,49 +109,81 @@ export default function MuhasebecPage() {
         ))}
       </div>
 
-      {/* Client cards */}
-      <div className="space-y-3">
-        {data.clients.map(({ company, incomingCount, outgoingCount, thisMonthIncoming, thisMonthOutgoing, riskyInvoices }) => {
-          const netVat = thisMonthOutgoing.vatAmount - thisMonthIncoming.vatAmount;
-          return (
-            <div key={company.id} className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:border-blue-200 transition-colors">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h3 className="font-semibold text-gray-800 text-sm">{company.name}</h3>
-                  <p className="text-xs text-gray-400">{company.taxNumber} · {company.user.email}</p>
-                </div>
-                {riskyInvoices > 0 && (
-                  <span className="flex items-center gap-1 text-xs text-red-600 bg-red-50 px-2 py-1 rounded-full">
-                    <AlertTriangle className="w-3 h-3" />
-                    {riskyInvoices} {t.riskyLabel}
-                  </span>
-                )}
-              </div>
+      {/* Search */}
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={t.clientSearchPlaceholder}
+          className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+        />
+        {search && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+            {filtered.length} / {data.clients.length}
+          </span>
+        )}
+      </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                <div>
-                  <p className="text-gray-400">{t.statIncoming}</p>
-                  <p className="font-semibold text-gray-700">{incomingCount} {t.invoiceCount}</p>
+      {/* Client cards */}
+      <div className="space-y-2">
+        {filtered.length === 0 ? (
+          <div className="text-center py-10 text-gray-400 text-sm">{t.clientSearchEmpty}</div>
+        ) : (
+          filtered.map(({ company, incomingCount, outgoingCount, thisMonthIncoming, thisMonthOutgoing, riskyInvoices }) => {
+            const netVat = thisMonthOutgoing.vatAmount - thisMonthIncoming.vatAmount;
+            return (
+              <Link
+                key={company.id}
+                href={`/muhasebeci/${company.id}`}
+                className="block bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:border-blue-300 hover:shadow-md transition-all"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                      <Building2 className="w-4 h-4 text-blue-500" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-800 text-sm">{company.name}</h3>
+                      <p className="text-xs text-gray-400">{company.taxNumber} · {company.user.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {riskyInvoices > 0 && (
+                      <span className="flex items-center gap-1 text-xs text-red-600 bg-red-50 px-2 py-1 rounded-full">
+                        <AlertTriangle className="w-3 h-3" />
+                        {riskyInvoices} {t.riskyLabel}
+                      </span>
+                    )}
+                    <ChevronRight className="w-4 h-4 text-gray-300" />
+                  </div>
                 </div>
-                <div>
-                  <p className="text-gray-400">{t.statOutgoing}</p>
-                  <p className="font-semibold text-gray-700">{outgoingCount} {t.invoiceCount}</p>
+
+                <div className="grid grid-cols-4 gap-3 text-xs">
+                  <div>
+                    <p className="text-gray-400">{t.statIncoming}</p>
+                    <p className="font-semibold text-gray-700">{incomingCount} {t.invoiceCount}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400">{t.statOutgoing}</p>
+                    <p className="font-semibold text-gray-700">{outgoingCount} {t.invoiceCount}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400">{t.statThisMonthIncoming}</p>
+                    <p className="font-semibold text-gray-700">₺{formatAmount(thisMonthIncoming.vatAmount)}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400">{t.statNetVat}</p>
+                    <p className={`font-semibold ${netVat > 0 ? "text-red-600" : "text-green-600"}`}>
+                      ₺{formatAmount(netVat)}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-gray-400">{t.statThisMonthIncoming}</p>
-                  <p className="font-semibold text-gray-700">₺{formatAmount(thisMonthIncoming.vatAmount)} KDV</p>
-                  <p className="text-gray-400">{thisMonthIncoming.count} {t.invoiceCount}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400">{t.statNetVat}</p>
-                  <p className={`font-semibold ${netVat > 0 ? "text-red-600" : "text-green-600"}`}>
-                    ₺{formatAmount(netVat)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+              </Link>
+            );
+          })
+        )}
       </div>
     </div>
   );

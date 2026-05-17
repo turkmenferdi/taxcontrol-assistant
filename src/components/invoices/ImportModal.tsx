@@ -10,6 +10,7 @@ interface Props {
   direction: "incoming" | "outgoing";
   onClose: () => void;
   onImported: () => void;
+  companyId?: string;
 }
 
 type Step = "upload" | "preview" | "done";
@@ -22,7 +23,7 @@ interface ImportResult {
   total: number;
 }
 
-export default function ImportModal({ direction, onClose, onImported }: Props) {
+export default function ImportModal({ direction, onClose, onImported, companyId }: Props) {
   const { t } = useLanguage();
   const fileRef = useRef<HTMLInputElement>(null);
   const [step, setStep] = useState<Step>("upload");
@@ -64,6 +65,7 @@ export default function ImportModal({ direction, onClose, onImported }: Props) {
     const fd = new FormData();
     fd.append("file", file);
     fd.append("direction", direction);
+    if (companyId) fd.append("companyId", companyId);
     const res = await fetch("/api/invoices/import", { method: "POST", body: fd });
     const data = await res.json();
     setResult(data);

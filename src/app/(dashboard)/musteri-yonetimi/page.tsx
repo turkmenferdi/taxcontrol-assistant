@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLanguage } from "@/contexts/language-context";
-import { Building2, Plus, Trash2, RefreshCw, AlertCircle } from "lucide-react";
+import { Building2, Plus, Trash2, RefreshCw, AlertCircle, Search, ChevronRight } from "lucide-react";
+import Link from "next/link";
 
 interface ClientCompany {
   id: string;
@@ -23,6 +24,7 @@ export default function MusteriYonetimiPage() {
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [search, setSearch] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -67,6 +69,17 @@ export default function MusteriYonetimiPage() {
   const vatPeriodLabel = (p: string) =>
     p === "monthly" ? t.vatPeriodMonthly : p === "quarterly" ? t.vatPeriodQuarterly : p;
 
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return clients;
+    return clients.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.taxNumber.includes(q) ||
+        c.user.email.toLowerCase().includes(q)
+    );
+  }, [clients, search]);
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
@@ -107,11 +120,21 @@ export default function MusteriYonetimiPage() {
 
       {/* Client list */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
-          <span className="text-sm font-semibold text-gray-700">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 gap-3">
+          <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
             {t.clientListTitle} ({clients.length})
           </span>
-          <button onClick={load} className="text-gray-400 hover:text-gray-600 transition-colors">
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t.clientSearchPlaceholder}
+              className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <button onClick={load} className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0">
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
@@ -123,25 +146,30 @@ export default function MusteriYonetimiPage() {
             <Building2 className="w-10 h-10 mx-auto mb-2 opacity-30" />
             <p className="text-sm">{t.clientListEmpty}</p>
           </div>
+        ) : filtered.length === 0 ? (
+          <div className="p-8 text-center text-gray-400 text-sm">{t.clientSearchEmpty}</div>
         ) : (
           <div className="divide-y divide-gray-50">
-            {clients.map((c) => (
+            {filtered.map((c) => (
               <div key={c.id} className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
+                <Link href={`/muhasebeci/${c.id}`} className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
                     <Building2 className="w-4 h-4 text-blue-500" />
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">{c.name}</p>
-                    <p className="text-xs text-gray-400">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-800 truncate">{c.name}</p>
+                    <p className="text-xs text-gray-400 truncate">
                       {t.taxNumberLabel}: {c.taxNumber}
                       {c.taxOffice && ` · ${c.taxOffice}`}
                       {" · "}{vatPeriodLabel(c.vatPeriod)}
                     </p>
                   </div>
-                </div>
-                <div className="flex items-center gap-4">
+                </Link>
+                <div className="flex items-center gap-3 flex-shrink-0 ml-3">
                   <span className="text-xs text-gray-400">{c._count.invoices} {t.invoiceCount}</span>
+                  <Link href={`/muhasebeci/${c.id}`} className="text-gray-300 hover:text-blue-500 transition-colors">
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
                   <button
                     onClick={() => removeClient(c.id)}
                     className="text-gray-300 hover:text-red-500 transition-colors"

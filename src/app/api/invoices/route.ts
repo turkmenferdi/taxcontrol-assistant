@@ -6,10 +6,23 @@ export async function GET(req: NextRequest) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
 
-  const company = await prisma.company.findUnique({ where: { userId: session.userId } });
-  if (!company) return NextResponse.json({ invoices: [] });
-
   const { searchParams } = new URL(req.url);
+  const requestedCompanyId = searchParams.get("companyId");
+
+  let companyId: string;
+
+  if (requestedCompanyId && session.user.role === "accountant") {
+    const access = await prisma.companyAccess.findUnique({
+      where: { userId_companyId: { userId: session.user.id, companyId: requestedCompanyId } },
+    });
+    if (!access) return NextResponse.json({ error: "Erişim reddedildi" }, { status: 403 });
+    companyId = requestedCompanyId;
+  } else {
+    const company = await prisma.company.findUnique({ where: { userId: session.userId } });
+    if (!company) return NextResponse.json({ invoices: [] });
+    companyId = company.id;
+  }
+
   const direction = searchParams.get("direction");
   const classification = searchParams.get("classification");
   const startDate = searchParams.get("startDate");
@@ -17,7 +30,7 @@ export async function GET(req: NextRequest) {
   const page = parseInt(searchParams.get("page") ?? "1");
   const limit = parseInt(searchParams.get("limit") ?? "50");
 
-  const where: Record<string, unknown> = { companyId: company.id };
+  const where: Record<string, unknown> = { companyId };
   if (direction) where.invoiceDirection = direction;
   if (startDate || endDate) {
     where.invoiceDate = {};
