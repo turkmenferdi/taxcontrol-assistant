@@ -7,14 +7,16 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  passwordHash String
-  name         String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  company      Company?
-  sessions     Session[]
+  id              String          @id @default(cuid())
+  email           String          @unique
+  passwordHash    String
+  name            String?
+  role            String          @default("owner")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  company         Company?
+  sessions        Session[]
+  managedClients  CompanyAccess[]
 }
 
 model Session {
@@ -27,20 +29,32 @@ model Session {
 }
 
 model Company {
-  id             String       @id @default(cuid())
-  userId         String       @unique
+  id             String          @id @default(cuid())
+  userId         String          @unique
   name           String
   taxNumber      String
   taxOffice      String?
-  companyType    String       @default("sole_proprietorship")
-  vatPeriod      String       @default("monthly")
+  companyType    String          @default("sole_proprietorship")
+  vatPeriod      String          @default("monthly")
   providerName   String?
   providerConfig String?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   invoices       Invoice[]
   taxSummaries   TaxSummary[]
+  accountants    CompanyAccess[]
+}
+
+model CompanyAccess {
+  id          String   @id @default(cuid())
+  userId      String
+  companyId   String
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, companyId])
 }
 
 model Invoice {

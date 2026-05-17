@@ -29,7 +29,14 @@ export async function getSession() {
 
   const session = await prisma.session.findUnique({
     where: { token },
-    include: { user: { include: { company: true } } },
+    include: {
+      user: {
+        include: {
+          company: true,
+          managedClients: { include: { company: true } },
+        },
+      },
+    },
   });
 
   if (!session || session.expiresAt < new Date()) {

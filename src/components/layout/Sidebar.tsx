@@ -13,6 +13,9 @@ import {
   Settings,
   LogOut,
   Building2,
+  Users,
+  CalendarDays,
+  BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/language-context";
@@ -22,11 +25,15 @@ async function handleLogout() {
   window.location.href = "/login";
 }
 
-export default function Sidebar() {
+interface SidebarProps {
+  userRole?: string;
+}
+
+export default function Sidebar({ userRole = "owner" }: SidebarProps) {
   const pathname = usePathname();
   const { t, lang, setLang } = useLanguage();
 
-  const navItems = [
+  const ownerNavItems = [
     { href: "/dashboard", label: t.navDashboard, icon: LayoutDashboard },
     { href: "/gelen-faturalar", label: t.navIncoming, icon: ArrowDownToLine },
     { href: "/giden-faturalar", label: t.navOutgoing, icon: ArrowUpFromLine },
@@ -37,6 +44,15 @@ export default function Sidebar() {
     { href: "/ayarlar", label: t.navSettings, icon: Settings },
   ];
 
+  const accountantNavItems = [
+    { href: "/muhasebeci", label: t.navAccountantDashboard, icon: BarChart3 },
+    { href: "/musteri-yonetimi", label: t.navClientManagement, icon: Users },
+    { href: "/takvim", label: t.navCalendar, icon: CalendarDays },
+    { href: "/ayarlar", label: t.navSettings, icon: Settings },
+  ];
+
+  const navItems = userRole === "accountant" ? accountantNavItems : ownerNavItems;
+
   return (
     <aside className="w-64 bg-slate-900 text-white flex flex-col h-screen fixed left-0 top-0 z-40">
       <div className="p-6 border-b border-slate-700">
@@ -46,7 +62,9 @@ export default function Sidebar() {
           </div>
           <div>
             <p className="font-bold text-sm leading-none">TaxControl</p>
-            <p className="text-xs text-slate-400 mt-0.5">{t.sidebarSubtitle}</p>
+            <p className="text-xs text-slate-400 mt-0.5">
+              {userRole === "accountant" ? t.sidebarSubtitleAccountant : t.sidebarSubtitle}
+            </p>
           </div>
         </div>
       </div>
