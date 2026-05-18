@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useLanguage } from "@/contexts/language-context";
-import { Building2, FileText, AlertTriangle, TrendingUp, RefreshCw, Search, ChevronRight, Clock } from "lucide-react";
+import { Building2, FileText, AlertTriangle, TrendingUp, RefreshCw, Search, ChevronRight, Clock, ClipboardList } from "lucide-react";
 import Link from "next/link";
 
 interface ClientSummary {
@@ -109,6 +109,7 @@ export default function MuhasebecPage() {
     { green: 0, yellow: 0, red: 0 }
   );
   const totalRisky = data.clients.reduce((s, c) => s + c.riskyInvoices, 0);
+  const totalPendingReview = data.clients.reduce((s, c) => s + c.pendingReviewCount, 0);
   const totalThisMonthVat = data.clients.reduce(
     (s, c) => s + c.thisMonthOutgoing.vatAmount - c.thisMonthIncoming.vatAmount, 0
   );
@@ -148,6 +149,27 @@ export default function MuhasebecPage() {
           {kdv.days}g
         </div>
       </div>
+
+      {/* Toplu İnceleme CTA */}
+      {(totalPendingReview > 0 || totalRisky > 0) && (
+        <Link
+          href="/toplu-inceleme"
+          className="flex items-center gap-3 bg-white border border-blue-200 hover:border-blue-400 rounded-xl px-4 py-3 mb-5 shadow-sm transition-all group"
+        >
+          <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-blue-200 transition-colors">
+            <ClipboardList className="w-5 h-5 text-blue-600" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-gray-800">Toplu İnceleme</p>
+            <p className="text-xs text-gray-500">
+              {totalPendingReview > 0 && `${totalPendingReview} onay bekliyor`}
+              {totalPendingReview > 0 && totalRisky > 0 && " · "}
+              {totalRisky > 0 && `${totalRisky} riskli fatura`}
+            </p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-blue-400 group-hover:text-blue-600 transition-colors flex-shrink-0" />
+        </Link>
+      )}
 
       {/* Top stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">

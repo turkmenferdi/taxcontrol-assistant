@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const OWNER_ONLY_PATHS = ["/dashboard", "/gelen-faturalar", "/giden-faturalar", "/riskli-giderler", "/kdv-ozeti", "/gecici-vergi", "/raporlar"];
-const ACCOUNTANT_ONLY_PATHS = ["/muhasebeci", "/musteri-yonetimi", "/takvim"];
+const ACCOUNTANT_ONLY_PATHS = ["/muhasebeci", "/musteri-yonetimi", "/takvim", "/toplu-inceleme"];
 const PUBLIC_PATHS = ["/login", "/api/auth/login", "/api/auth/register"];
 
 export function proxy(req: NextRequest) {

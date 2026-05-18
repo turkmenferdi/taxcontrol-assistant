@@ -17,6 +17,7 @@ import {
   Users,
   CalendarDays,
   BarChart3,
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/language-context";
@@ -64,6 +65,7 @@ export default function Sidebar({ userRole = "owner", userName = "", companyName
 
   const accountantNavItems = [
     { href: "/muhasebeci", label: t.navAccountantDashboard, icon: BarChart3 },
+    { href: "/toplu-inceleme", label: t.navBulkReview, icon: ClipboardList },
     { href: "/musteri-yonetimi", label: t.navClientManagement, icon: Users },
     { href: "/takvim", label: t.navCalendar, icon: CalendarDays },
     { href: "/ayarlar", label: t.navSettings, icon: Settings },

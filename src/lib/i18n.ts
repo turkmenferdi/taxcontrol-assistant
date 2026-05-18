@@ -230,6 +230,20 @@ const tr = {
   statNetVat: "Net KDV Yükü",
   riskyLabel: "riskli",
 
+  // Bulk review
+  navBulkReview: "Toplu İnceleme",
+  bulkReviewTitle: "Toplu İnceleme",
+  bulkReviewDesc: "Tüm müşteri firmalarınızdaki bekleyen faturaları tek ekranda inceleyin ve karara bağlayın.",
+  bulkReviewTabReview: "Muhasebeci İncelemesi",
+  bulkReviewTabRisky: "Riskli Faturalar",
+  bulkReviewEmpty: "Bu kategoride bekleyen fatura bulunamadı.",
+  bulkReviewCompany: "Firma",
+  bulkApproveDeductible: "İndirilebilir Onayla",
+  bulkMarkNonDeductible: "İndirilemez İşaretle",
+  bulkActionBar: (n: number) => `${n} fatura seçildi`,
+  bulkApplyOk: (n: number) => `${n} fatura güncellendi.`,
+  bulkAllCompanies: (n: number) => `Tüm Firmalar (${n})`,
+
   // Tax calendar
   calendarTitle: "Vergi Takvimi",
   calendarDesc: "Yaklaşan vergi beyanname ve ödeme tarihlerini takip edin.",
@@ -470,6 +484,20 @@ const en: typeof tr = {
   statThisMonthIncoming: "This Month VAT (In)",
   statNetVat: "Net VAT Burden",
   riskyLabel: "risky",
+
+  // Bulk review
+  navBulkReview: "Bulk Review",
+  bulkReviewTitle: "Bulk Review",
+  bulkReviewDesc: "Review and decide on pending invoices from all your client companies in one screen.",
+  bulkReviewTabReview: "Accountant Review",
+  bulkReviewTabRisky: "Risky Invoices",
+  bulkReviewEmpty: "No pending invoices found in this category.",
+  bulkReviewCompany: "Company",
+  bulkApproveDeductible: "Approve as Deductible",
+  bulkMarkNonDeductible: "Mark as Non-Deductible",
+  bulkActionBar: (n: number) => `${n} invoices selected`,
+  bulkApplyOk: (n: number) => `${n} invoices updated.`,
+  bulkAllCompanies: (n: number) => `All Companies (${n})`,
 
   // Tax calendar
   calendarTitle: "Tax Calendar",
