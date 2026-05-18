@@ -163,7 +163,7 @@ export default function MusteriYonetimiPage() {
                     <div className="flex items-center gap-1.5">
                       <p className="text-sm font-medium text-gray-800 truncate">{c.name}</p>
                       {c.note && (
-                        <StickyNote className="w-3 h-3 text-yellow-400 flex-shrink-0" title="Not var" />
+                        <span title="Not var"><StickyNote className="w-3 h-3 text-yellow-400 flex-shrink-0" /></span>
                       )}
                     </div>
                     <p className="text-xs text-gray-400 truncate">
