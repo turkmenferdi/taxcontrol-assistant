@@ -37,6 +37,7 @@ interface DashboardData {
   reviewCount: number;
   deductibleCount: number;
   totalClassified: number;
+  trends: { outgoing: number; incoming: number };
   period: { quarter: number; year: number };
 }
 
@@ -126,8 +127,8 @@ export default function DashboardPage() {
         {t.sectionInvoices}
       </h2>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPICard title={t.kpiOutgoing} value={String(data.outgoingCount)} subtitle={t.thisMonth} icon={ArrowUpFromLine} color="blue" />
-        <KPICard title={t.kpiIncoming} value={String(data.incomingCount)} subtitle={t.thisMonth} icon={ArrowDownToLine} color="purple" />
+        <KPICard title={t.kpiOutgoing} value={String(data.outgoingCount)} subtitle={t.thisMonth} icon={ArrowUpFromLine} color="blue" trend={data.trends.outgoing} />
+        <KPICard title={t.kpiIncoming} value={String(data.incomingCount)} subtitle={t.thisMonth} icon={ArrowDownToLine} color="purple" trend={data.trends.incoming} />
         <KPICard title={t.kpiRisky} value={String(data.riskyCount)} subtitle={t.pendingApproval} icon={AlertTriangle} color="orange" />
         <KPICard title={t.kpiReview} value={String(data.reviewCount)} subtitle={t.needsReview} icon={ClipboardCheck} color="red" />
       </div>

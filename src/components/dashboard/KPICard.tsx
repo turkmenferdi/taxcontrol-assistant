@@ -8,6 +8,7 @@ interface KPICardProps {
   icon: LucideIcon;
   color?: "blue" | "green" | "red" | "orange" | "purple" | "yellow" | "gray";
   className?: string;
+  trend?: number;
 }
 
 const colorClasses = {
@@ -20,7 +21,7 @@ const colorClasses = {
   gray:   { icon: "bg-gray-100 text-gray-500",   border: "border-l-gray-400" },
 };
 
-export default function KPICard({ title, value, subtitle, icon: Icon, color = "blue", className }: KPICardProps) {
+export default function KPICard({ title, value, subtitle, icon: Icon, color = "blue", className, trend }: KPICardProps) {
   const colors = colorClasses[color] ?? colorClasses.blue;
   return (
     <div className={cn("bg-white rounded-xl border border-gray-200 p-5 border-l-4 shadow-sm", colors.border, className)}>
@@ -28,7 +29,14 @@ export default function KPICard({ title, value, subtitle, icon: Icon, color = "b
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-gray-500 truncate">{title}</p>
           <p className="mt-1 text-2xl font-bold text-gray-900 truncate">{value}</p>
-          {subtitle && <p className="mt-1 text-xs text-gray-400">{subtitle}</p>}
+          <div className="mt-1 flex items-center gap-2">
+            {subtitle && <p className="text-xs text-gray-400">{subtitle}</p>}
+            {trend !== undefined && trend !== 0 && (
+              <span className={`text-xs font-semibold ${trend > 0 ? "text-green-600" : "text-red-500"}`}>
+                {trend > 0 ? "↑" : "↓"}{Math.abs(trend).toFixed(0)}%
+              </span>
+            )}
+          </div>
         </div>
         <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ml-3", colors.icon)}>
           <Icon className="w-5 h-5" />
