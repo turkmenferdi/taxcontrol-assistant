@@ -42,9 +42,21 @@ export async function GET() {
         }),
       ]);
 
-      const riskyInvoices = await prisma.expenseClassification.count({
-        where: { invoice: { companyId }, classification: "risky" },
-      });
+      const [riskyInvoices, pendingReviewCount] = await Promise.all([
+        prisma.expenseClassification.count({
+          where: {
+            invoice: { companyId },
+            OR: [{ classification: "non_deductible" }, { classification: "partially_deductible" }],
+          },
+        }),
+        prisma.expenseClassification.count({
+          where: {
+            invoice: { companyId },
+            classification: "accountant_review_required",
+            accountantFinalDecision: null,
+          },
+        }),
+      ]);
 
       return {
         company,
@@ -61,6 +73,7 @@ export async function GET() {
           vatAmount: thisMonthOutgoing._sum.vatAmount ?? 0,
         },
         riskyInvoices,
+        pendingReviewCount,
       };
     })
   );

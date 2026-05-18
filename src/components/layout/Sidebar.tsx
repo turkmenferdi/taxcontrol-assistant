@@ -41,7 +41,9 @@ export default function Sidebar({ userRole = "owner" }: SidebarProps) {
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (!data) return;
-        const count = data.clients?.filter((c: { riskyInvoices: number }) => c.riskyInvoices > 0).length ?? 0;
+        const count = data.clients?.filter((c: { riskyInvoices: number; pendingReviewCount: number }) =>
+          c.riskyInvoices > 0 || c.pendingReviewCount > 0
+        ).length ?? 0;
         setAlertCount(count);
       })
       .catch(() => {});

@@ -20,7 +20,7 @@ export async function GET() {
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json(accesses.map((a) => a.company));
+  return NextResponse.json(accesses.map((a) => ({ ...a.company, note: a.note })));
 }
 
 export async function POST(req: Request) {

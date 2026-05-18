@@ -15,6 +15,7 @@ interface ClientSummary {
   thisMonthIncoming: { count: number; netAmount: number; vatAmount: number };
   thisMonthOutgoing: { count: number; netAmount: number; vatAmount: number };
   riskyInvoices: number;
+  pendingReviewCount: number;
 }
 
 interface SummaryData {
@@ -44,6 +45,7 @@ function getKdvCountdown() {
 function healthScore(c: ClientSummary): { score: number; color: "green" | "yellow" | "red"; label: string; emoji: string } {
   let score = 100;
   score -= Math.min(c.riskyInvoices * 8, 40);
+  score -= Math.min(c.pendingReviewCount * 5, 20);
   if (c.thisMonthIncoming.count === 0 && c.thisMonthOutgoing.count === 0) score -= 10;
   const netVat = c.thisMonthOutgoing.vatAmount - c.thisMonthIncoming.vatAmount;
   if (netVat > 50000) score -= 10;
@@ -230,9 +232,15 @@ export default function MuhasebecPage() {
                   </p>
                 </div>
                 {c.riskyInvoices > 0 && (
-                  <div className="flex items-center gap-1 text-red-500 bg-red-50 px-2 py-1 rounded-full">
+                  <div className="flex items-center gap-1 text-red-500 bg-red-50 px-2 py-1 rounded-full" title="Riskli fatura">
                     <AlertTriangle className="w-3 h-3" />
                     <span className="font-semibold">{c.riskyInvoices}</span>
+                  </div>
+                )}
+                {c.pendingReviewCount > 0 && (
+                  <div className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-1 rounded-full" title="Onay bekleyen">
+                    <span className="text-xs">⏳</span>
+                    <span className="font-semibold">{c.pendingReviewCount}</span>
                   </div>
                 )}
               </div>
