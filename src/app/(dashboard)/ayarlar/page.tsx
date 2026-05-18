@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/language-context";
+import { User } from "lucide-react";
 
 interface Company {
   name: string;
@@ -36,6 +37,14 @@ export default function AyarlarPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
+
+  // Profile section
+  const [userProfile, setUserProfile] = useState<{ name: string; email: string; role: string } | null>(null);
+  const [profileName, setProfileName] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileMsg, setProfileMsg] = useState("");
 
   useEffect(() => {
     fetch("/api/company")
