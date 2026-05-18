@@ -24,10 +24,6 @@ interface SummaryData {
   totalInvoices: number;
 }
 
-function formatAmount(n: number) {
-  return new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
-}
-
 function getKdvCountdown() {
   const now = new Date();
   const year = now.getFullYear();
@@ -42,7 +38,7 @@ function getKdvCountdown() {
   return { days: diff, isPast: false, nextMonth: false };
 }
 
-function healthScore(c: ClientSummary): { score: number; color: "green" | "yellow" | "red"; label: string; emoji: string } {
+function healthScore(c: ClientSummary): { score: number; color: "green" | "yellow" | "red"; emoji: string } {
   let score = 100;
   score -= Math.min(c.riskyInvoices * 8, 40);
   score -= Math.min(c.pendingReviewCount * 5, 20);
@@ -50,9 +46,9 @@ function healthScore(c: ClientSummary): { score: number; color: "green" | "yello
   const netVat = c.thisMonthOutgoing.vatAmount - c.thisMonthIncoming.vatAmount;
   if (netVat > 50000) score -= 10;
 
-  if (score >= 80) return { score, color: "green", label: "Temiz", emoji: "🟢" };
-  if (score >= 50) return { score, color: "yellow", label: "Dikkat", emoji: "🟡" };
-  return { score, color: "red", label: "Acil", emoji: "🔴" };
+  if (score >= 80) return { score, color: "green", emoji: "🟢" };
+  if (score >= 50) return { score, color: "yellow", emoji: "🟡" };
+  return { score, color: "red", emoji: "🔴" };
 }
 
 const healthColors = {
@@ -62,11 +58,19 @@ const healthColors = {
 };
 
 export default function MuhasebecPage() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [data, setData] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterHealth, setFilterHealth] = useState<"all" | "red" | "yellow" | "green">("all");
+
+  const formatAmount = (n: number) =>
+    new Intl.NumberFormat(lang === "tr" ? "tr-TR" : "en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(n);
+
+  const healthLabel = { green: t.healthClean, yellow: t.healthCaution, red: t.healthUrgent };
 
   async function load() {
     setLoading(true);
@@ -137,20 +141,18 @@ export default function MuhasebecPage() {
         <Clock className={`w-5 h-5 flex-shrink-0 ${kdvUrgent ? "text-red-500" : kdvWarning ? "text-yellow-500" : "text-blue-500"}`} />
         <div className="flex-1">
           <p className={`text-sm font-semibold ${kdvUrgent ? "text-red-700" : kdvWarning ? "text-yellow-700" : "text-blue-700"}`}>
-            {kdv.nextMonth ? "Bu ayın KDV beyannamesi verildi" : "Aylık KDV Beyannamesi Son Tarihi"}
+            {kdv.nextMonth ? t.kdvDeadlineDone : t.kdvDeadlineTitle}
           </p>
           <p className={`text-xs mt-0.5 ${kdvUrgent ? "text-red-600" : kdvWarning ? "text-yellow-600" : "text-blue-600"}`}>
-            {kdv.nextMonth
-              ? `Sonraki KDV beyannamesi için ${kdv.days} gün kaldı`
-              : `Bu ay 26'sına kadar — ${kdv.days} gün kaldı`}
+            {kdv.nextMonth ? t.kdvNextMonthDays(kdv.days) : t.kdvDaysLeft(kdv.days)}
           </p>
         </div>
         <div className={`text-2xl font-bold flex-shrink-0 ${kdvUrgent ? "text-red-600" : kdvWarning ? "text-yellow-600" : "text-blue-600"}`}>
-          {kdv.days}g
+          {kdv.days}{t.kdvDaysUnit}
         </div>
       </div>
 
-      {/* Toplu İnceleme CTA */}
+      {/* Bulk review CTA */}
       {(totalPendingReview > 0 || totalRisky > 0) && (
         <Link
           href="/toplu-inceleme"
@@ -160,11 +162,11 @@ export default function MuhasebecPage() {
             <ClipboardList className="w-5 h-5 text-blue-600" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-semibold text-gray-800">Toplu İnceleme</p>
+            <p className="text-sm font-semibold text-gray-800">{t.navBulkReview}</p>
             <p className="text-xs text-gray-500">
-              {totalPendingReview > 0 && `${totalPendingReview} onay bekliyor`}
+              {totalPendingReview > 0 && t.pendingReviewLabel(totalPendingReview)}
               {totalPendingReview > 0 && totalRisky > 0 && " · "}
-              {totalRisky > 0 && `${totalRisky} riskli fatura`}
+              {totalRisky > 0 && t.riskyInvoiceLabel(totalRisky)}
             </p>
           </div>
           <ChevronRight className="w-4 h-4 text-blue-400 group-hover:text-blue-600 transition-colors flex-shrink-0" />
@@ -189,7 +191,12 @@ export default function MuhasebecPage() {
       {/* Health filter + search */}
       <div className="flex gap-2 mb-4 flex-wrap">
         {(["all", "red", "yellow", "green"] as const).map((f) => {
-          const labels = { all: `Tümü (${data.clients.length})`, red: `🔴 Acil (${healthCounts.red})`, yellow: `🟡 Dikkat (${healthCounts.yellow})`, green: `🟢 Temiz (${healthCounts.green})` };
+          const labels = {
+            all: t.filterAll(data.clients.length),
+            red: t.filterUrgent(healthCounts.red),
+            yellow: t.filterCaution(healthCounts.yellow),
+            green: t.filterClean(healthCounts.green),
+          };
           return (
             <button
               key={f}
@@ -228,7 +235,7 @@ export default function MuhasebecPage() {
               {/* Health badge */}
               <div className={`w-16 text-center py-1.5 rounded-lg border text-xs font-bold flex-shrink-0 ${healthColors[health.color]}`}>
                 <div className="text-lg leading-none">{health.emoji}</div>
-                <div className="mt-0.5">{health.label}</div>
+                <div className="mt-0.5">{healthLabel[health.color]}</div>
               </div>
 
               {/* Company info */}
@@ -240,27 +247,27 @@ export default function MuhasebecPage() {
               {/* Stats */}
               <div className="hidden md:flex items-center gap-6 text-xs flex-shrink-0">
                 <div className="text-center">
-                  <p className="text-gray-400">Gelen</p>
+                  <p className="text-gray-400">{t.statIncoming}</p>
                   <p className="font-semibold text-gray-700">{c.thisMonthIncoming.count}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-gray-400">Giden</p>
+                  <p className="text-gray-400">{t.statOutgoing}</p>
                   <p className="font-semibold text-gray-700">{c.thisMonthOutgoing.count}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-gray-400">Net KDV</p>
+                  <p className="text-gray-400">{t.statNetVatShort}</p>
                   <p className={`font-semibold ${netVat > 0 ? "text-red-600" : "text-green-600"}`}>
                     ₺{formatAmount(netVat)}
                   </p>
                 </div>
                 {c.riskyInvoices > 0 && (
-                  <div className="flex items-center gap-1 text-red-500 bg-red-50 px-2 py-1 rounded-full" title="Riskli fatura">
+                  <div className="flex items-center gap-1 text-red-500 bg-red-50 px-2 py-1 rounded-full" title={t.riskyInvoiceTooltip}>
                     <AlertTriangle className="w-3 h-3" />
                     <span className="font-semibold">{c.riskyInvoices}</span>
                   </div>
                 )}
                 {c.pendingReviewCount > 0 && (
-                  <div className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-1 rounded-full" title="Onay bekleyen">
+                  <div className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-1 rounded-full" title={t.pendingReviewTooltip}>
                     <span className="text-xs">⏳</span>
                     <span className="font-semibold">{c.pendingReviewCount}</span>
                   </div>

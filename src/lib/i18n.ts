@@ -244,6 +244,29 @@ const tr = {
   importParseError: "Dosya okunamadı. Geçerli bir Excel veya CSV dosyası seçin.",
   importBtnLabel: "Excel İçe Aktar",
 
+  // Health score labels
+  healthClean: "Temiz",
+  healthCaution: "Dikkat",
+  healthUrgent: "Acil",
+  filterAll: (n: number) => `Tümü (${n})`,
+  filterUrgent: (n: number) => `🔴 Acil (${n})`,
+  filterCaution: (n: number) => `🟡 Dikkat (${n})`,
+  filterClean: (n: number) => `🟢 Temiz (${n})`,
+
+  // KDV deadline countdown
+  kdvDeadlineTitle: "Aylık KDV Beyannamesi Son Tarihi",
+  kdvDeadlineDone: "Bu ayın KDV beyannamesi verildi",
+  kdvDaysLeft: (days: number) => `Bu ay 26'sına kadar — ${days} gün kaldı`,
+  kdvNextMonthDays: (days: number) => `Sonraki KDV beyannamesi için ${days} gün kaldı`,
+  kdvDaysUnit: "g",
+
+  // Client card inline labels
+  statNetVatShort: "Net KDV",
+  riskyInvoiceTooltip: "Riskli fatura",
+  pendingReviewTooltip: "Onay bekleyen",
+  pendingReviewLabel: (n: number) => `${n} onay bekliyor`,
+  riskyInvoiceLabel: (n: number) => `${n} riskli fatura`,
+
   // Sidebar accountant
   sidebarSubtitleAccountant: "Muhasebeci Paneli",
   navAccountantDashboard: "Muhasebeci Paneli",
@@ -552,6 +575,29 @@ const en: typeof tr = {
   importNoRows: "No invoices found in file. Check column headers.",
   importParseError: "Could not read file. Please select a valid Excel or CSV file.",
   importBtnLabel: "Import Excel",
+
+  // Health score labels
+  healthClean: "Clean",
+  healthCaution: "Caution",
+  healthUrgent: "Urgent",
+  filterAll: (n: number) => `All (${n})`,
+  filterUrgent: (n: number) => `🔴 Urgent (${n})`,
+  filterCaution: (n: number) => `🟡 Caution (${n})`,
+  filterClean: (n: number) => `🟢 Clean (${n})`,
+
+  // KDV deadline countdown
+  kdvDeadlineTitle: "Monthly VAT Declaration Deadline",
+  kdvDeadlineDone: "This month's VAT declaration submitted",
+  kdvDaysLeft: (days: number) => `Due by the 26th — ${days} days left`,
+  kdvNextMonthDays: (days: number) => `${days} days until next VAT declaration`,
+  kdvDaysUnit: "d",
+
+  // Client card inline labels
+  statNetVatShort: "Net VAT",
+  riskyInvoiceTooltip: "Risky invoice",
+  pendingReviewTooltip: "Pending review",
+  pendingReviewLabel: (n: number) => `${n} pending review`,
+  riskyInvoiceLabel: (n: number) => `${n} risky invoices`,
 
   // Sidebar accountant
   sidebarSubtitleAccountant: "Accountant Panel",
