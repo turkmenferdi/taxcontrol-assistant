@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import ClassificationBadge from "./ClassificationBadge";
-import { ChevronLeft, ChevronRight, Search, CheckSquare, Square, CheckCheck, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, CheckSquare, Square, CheckCheck, X, Calendar } from "lucide-react";
 import ReviewModal from "./ReviewModal";
 import { useLanguage } from "@/contexts/language-context";
 
@@ -54,6 +54,8 @@ export default function InvoiceTable({ direction, riskyOnly, reviewOnly, company
   const [bulkNote, setBulkNote] = useState("");
   const [showNoteInput, setShowNoteInput] = useState(false);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   const title = riskyOnly ? t.riskyTitle : reviewOnly ? t.reviewTitle
     : direction === "outgoing" ? t.outgoingTitle : t.incomingTitle;
@@ -63,6 +65,8 @@ export default function InvoiceTable({ direction, riskyOnly, reviewOnly, company
     const params = new URLSearchParams({ page: String(page), limit: "20" });
     if (direction) params.set("direction", direction);
     if (companyId) params.set("companyId", companyId);
+    if (dateFrom) params.set("startDate", dateFrom);
+    if (dateTo) params.set("endDate", dateTo);
     const res = await fetch(`/api/invoices?${params}`);
     if (res.ok) {
       const data = await res.json();
@@ -81,7 +85,7 @@ export default function InvoiceTable({ direction, riskyOnly, reviewOnly, company
     }
     setLoading(false);
     setChecked(new Set());
-  }, [page, direction, riskyOnly, reviewOnly, companyId]);
+  }, [page, direction, riskyOnly, reviewOnly, companyId, dateFrom, dateTo]);
 
   useEffect(() => { fetchInvoices(); }, [fetchInvoices]);
 
@@ -132,17 +136,40 @@ export default function InvoiceTable({ direction, riskyOnly, reviewOnly, company
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
         <h1 className="text-xl font-bold text-gray-900">{title}</h1>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder={t.search}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-56"
-          />
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <Calendar className="w-3.5 h-3.5 text-gray-400" />
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+              className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <span className="text-gray-400">—</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+              className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {(dateFrom || dateTo) && (
+              <button onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }} className="text-gray-400 hover:text-gray-600 ml-1">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder={t.search}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
+            />
+          </div>
         </div>
       </div>
 

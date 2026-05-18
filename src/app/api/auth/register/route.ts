@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { hashPassword, createSession } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
-  const { email, password, name } = await req.json();
+  const { email, password, name, role } = await req.json();
 
   if (!email || !password) {
     return NextResponse.json({ error: "Email ve şifre gereklidir." }, { status: 400 });
@@ -14,8 +14,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Bu email zaten kayıtlı." }, { status: 409 });
   }
 
+  const userRole = role === "accountant" ? "accountant" : "owner";
   const passwordHash = await hashPassword(password);
-  const user = await prisma.user.create({ data: { email, passwordHash, name } });
+  const user = await prisma.user.create({ data: { email, passwordHash, name, role: userRole } });
   const token = await createSession(user.id);
 
   const res = NextResponse.json({ ok: true, user: { id: user.id, email: user.email } });

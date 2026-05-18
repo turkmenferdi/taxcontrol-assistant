@@ -7,7 +7,7 @@ import ImportModal from "@/components/invoices/ImportModal";
 import {
   ArrowLeft, Building2, AlertTriangle, Upload, FileText, Receipt,
   TrendingUp, Wallet, ClipboardCheck, ArrowDownToLine, ArrowUpFromLine,
-  CheckCircle2, RefreshCw, Send, BarChart2, Copy, Check,
+  CheckCircle2, RefreshCw, Send, BarChart2, Copy, Check, StickyNote,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -38,7 +38,7 @@ interface TrendMonth {
   netVat: number;
 }
 
-type Tab = "incoming" | "outgoing" | "risky" | "vat" | "trend";
+type Tab = "incoming" | "outgoing" | "risky" | "vat" | "trend" | "notes";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
@@ -191,17 +191,34 @@ export default function ClientDetailPage({ params }: { params: Promise<{ company
   const [refreshKey, setRefreshKey] = useState(0);
   const [showImport, setShowImport] = useState(false);
   const [showSend, setShowSend] = useState(false);
+  const [note, setNote] = useState("");
+  const [noteSaved, setNoteSaved] = useState(false);
+  const [noteSaving, setNoteSaving] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [statsRes, trendRes] = await Promise.all([
+    const [statsRes, trendRes, noteRes] = await Promise.all([
       fetch(`/api/accountant/company/${companyId}`),
       fetch(`/api/accountant/company/${companyId}/trend`),
+      fetch(`/api/accountant/company/${companyId}/note`),
     ]);
     if (statsRes.ok) setData(await statsRes.json());
     if (trendRes.ok) setTrend((await trendRes.json()).months);
+    if (noteRes.ok) setNote((await noteRes.json()).note ?? "");
     setLoading(false);
   }, [companyId]);
+
+  async function saveNote() {
+    setNoteSaving(true);
+    await fetch(`/api/accountant/company/${companyId}/note`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ note }),
+    });
+    setNoteSaving(false);
+    setNoteSaved(true);
+    setTimeout(() => setNoteSaved(false), 2000);
+  }
 
   useEffect(() => { load(); }, [load]);
 
@@ -224,6 +241,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ company
     { key: "risky", label: t.navRisky, icon: AlertTriangle },
     { key: "vat", label: "KDV & Vergi", icon: Receipt },
     { key: "trend", label: "Trend", icon: BarChart2 },
+    { key: "notes", label: "Notlar", icon: StickyNote },
   ];
 
   return (
@@ -415,8 +433,42 @@ export default function ClientDetailPage({ params }: { params: Promise<{ company
         </div>
       )}
 
+      {/* Tab: Notes */}
+      {tab === "notes" && (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <StickyNote className="w-4 h-4 text-yellow-500" />
+            <p className="text-sm font-semibold text-gray-700">Müşteri Notları</p>
+          </div>
+          <p className="text-xs text-gray-400 mb-3">
+            Bu müşteriyle ilgili özel notlarınız burada saklanır. Sadece siz görebilirsiniz.
+          </p>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            rows={10}
+            placeholder="Müşteriyle ilgili notlarınızı buraya yazın...&#10;&#10;Örnek:&#10;• Beyanname teslim etmem gerekiyor&#10;• KDV iadesi takip ediliyor&#10;• E-fatura sistemine geçiş planlanıyor"
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none leading-relaxed"
+          />
+          <div className="flex items-center justify-between mt-3">
+            <p className="text-xs text-gray-400">{note.length} karakter</p>
+            <button
+              onClick={saveNote}
+              disabled={noteSaving}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            >
+              {noteSaved ? (
+                <><CheckCircle2 className="w-4 h-4 text-green-300" /> Kaydedildi</>
+              ) : noteSaving ? "Kaydediliyor..." : (
+                <><Check className="w-4 h-4" /> Kaydet</>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Invoice tabs */}
-      {tab !== "vat" && tab !== "trend" && (
+      {tab !== "vat" && tab !== "trend" && tab !== "notes" && (
         <InvoiceTable
           key={`${tab}-${refreshKey}`}
           direction={tab === "risky" ? "incoming" : tab}

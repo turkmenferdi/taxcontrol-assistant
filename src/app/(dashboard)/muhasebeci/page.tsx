@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useLanguage } from "@/contexts/language-context";
-import { Building2, FileText, AlertTriangle, TrendingUp, RefreshCw, Search, ChevronRight } from "lucide-react";
+import { Building2, FileText, AlertTriangle, TrendingUp, RefreshCw, Search, ChevronRight, Clock } from "lucide-react";
 import Link from "next/link";
 
 interface ClientSummary {
@@ -25,6 +25,20 @@ interface SummaryData {
 
 function formatAmount(n: number) {
   return new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+}
+
+function getKdvCountdown() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const deadline = new Date(year, month, 26, 23, 59, 59);
+  if (now > deadline) {
+    const nextDeadline = new Date(year, month + 1, 26, 23, 59, 59);
+    const diff = Math.ceil((nextDeadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    return { days: diff, isPast: true, nextMonth: true };
+  }
+  const diff = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  return { days: diff, isPast: false, nextMonth: false };
 }
 
 function healthScore(c: ClientSummary): { score: number; color: "green" | "yellow" | "red"; label: string; emoji: string } {
@@ -97,6 +111,10 @@ export default function MuhasebecPage() {
     (s, c) => s + c.thisMonthOutgoing.vatAmount - c.thisMonthIncoming.vatAmount, 0
   );
 
+  const kdv = getKdvCountdown();
+  const kdvUrgent = kdv.days <= 3;
+  const kdvWarning = kdv.days <= 7 && !kdvUrgent;
+
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -107,6 +125,26 @@ export default function MuhasebecPage() {
         <button onClick={load} className="text-gray-400 hover:text-gray-600 transition-colors">
           <RefreshCw className="w-4 h-4" />
         </button>
+      </div>
+
+      {/* KDV deadline countdown */}
+      <div className={`flex items-center gap-3 rounded-xl border px-4 py-3 mb-5 ${
+        kdvUrgent ? "bg-red-50 border-red-200" : kdvWarning ? "bg-yellow-50 border-yellow-200" : "bg-blue-50 border-blue-200"
+      }`}>
+        <Clock className={`w-5 h-5 flex-shrink-0 ${kdvUrgent ? "text-red-500" : kdvWarning ? "text-yellow-500" : "text-blue-500"}`} />
+        <div className="flex-1">
+          <p className={`text-sm font-semibold ${kdvUrgent ? "text-red-700" : kdvWarning ? "text-yellow-700" : "text-blue-700"}`}>
+            {kdv.nextMonth ? "Bu ayın KDV beyannamesi verildi" : "Aylık KDV Beyannamesi Son Tarihi"}
+          </p>
+          <p className={`text-xs mt-0.5 ${kdvUrgent ? "text-red-600" : kdvWarning ? "text-yellow-600" : "text-blue-600"}`}>
+            {kdv.nextMonth
+              ? `Sonraki KDV beyannamesi için ${kdv.days} gün kaldı`
+              : `Bu ay 26'sına kadar — ${kdv.days} gün kaldı`}
+          </p>
+        </div>
+        <div className={`text-2xl font-bold flex-shrink-0 ${kdvUrgent ? "text-red-600" : kdvWarning ? "text-yellow-600" : "text-blue-600"}`}>
+          {kdv.days}g
+        </div>
       </div>
 
       {/* Top stats */}

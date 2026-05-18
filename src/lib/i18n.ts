@@ -17,6 +17,11 @@ const tr = {
   createAccount: "Hesap Oluştur",
   authDisclaimer: "Bu uygulama tahmini bir ön-kontrol aracıdır. Kesin vergi beyanı için muhasebeci onayı gereklidir.",
   loginError: "Bir hata oluştu.",
+  registerRoleLabel: "Hesap Türü",
+  registerRoleOwner: "İşletme Sahibi",
+  registerRoleOwnerDesc: "Kendi firmanızın faturalarını yönetin",
+  registerRoleAccountant: "Muhasebeci (SMMM)",
+  registerRoleAccountantDesc: "Birden fazla müşteri firmayı yönetin",
 
   // Nav
   navDashboard: "Dashboard",
@@ -261,6 +266,11 @@ const en: typeof tr = {
   createAccount: "Create Account",
   authDisclaimer: "This app is an estimated pre-check tool. Official tax declarations require accountant approval.",
   loginError: "An error occurred.",
+  registerRoleLabel: "Account Type",
+  registerRoleOwner: "Business Owner",
+  registerRoleOwnerDesc: "Manage your own company invoices",
+  registerRoleAccountant: "Accountant (CPA)",
+  registerRoleAccountantDesc: "Manage multiple client companies",
 
   navDashboard: "Dashboard",
   navIncoming: "Incoming Invoices",
