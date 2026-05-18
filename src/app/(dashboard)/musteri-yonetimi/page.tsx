@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useLanguage } from "@/contexts/language-context";
-import { Building2, Plus, Trash2, RefreshCw, AlertCircle, Search, ChevronRight } from "lucide-react";
+import { Building2, Plus, Trash2, RefreshCw, AlertCircle, Search, ChevronRight, Check, X } from "lucide-react";
 import Link from "next/link";
 
 interface ClientCompany {
@@ -25,6 +25,7 @@ export default function MusteriYonetimiPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [search, setSearch] = useState("");
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -50,6 +51,7 @@ export default function MusteriYonetimiPage() {
       setSuccess(t.clientAddSuccess);
       setTaxNumber("");
       load();
+      setTimeout(() => setSuccess(""), 3500);
     } else {
       setError(data.error || t.clientAddError);
     }
@@ -57,12 +59,12 @@ export default function MusteriYonetimiPage() {
   }
 
   async function removeClient(companyId: string) {
-    if (!confirm(t.clientRemoveConfirm)) return;
     await fetch("/api/accountant/clients", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ companyId }),
     });
+    setConfirmingId(null);
     load();
   }
 
@@ -167,15 +169,31 @@ export default function MusteriYonetimiPage() {
                 </Link>
                 <div className="flex items-center gap-3 flex-shrink-0 ml-3">
                   <span className="text-xs text-gray-400">{c._count.invoices} {t.invoiceCount}</span>
-                  <Link href={`/muhasebeci/${c.id}`} className="text-gray-300 hover:text-blue-500 transition-colors">
-                    <ChevronRight className="w-4 h-4" />
-                  </Link>
-                  <button
-                    onClick={() => removeClient(c.id)}
-                    className="text-gray-300 hover:text-red-500 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {confirmingId === c.id ? (
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-red-600 font-medium">Emin misiniz?</span>
+                      <button onClick={() => removeClient(c.id)}
+                        className="p-1 rounded bg-red-100 text-red-600 hover:bg-red-200 transition-colors">
+                        <Check className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={() => setConfirmingId(null)}
+                        className="p-1 rounded bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <Link href={`/muhasebeci/${c.id}`} className="text-gray-300 hover:text-blue-500 transition-colors">
+                        <ChevronRight className="w-4 h-4" />
+                      </Link>
+                      <button
+                        onClick={() => setConfirmingId(c.id)}
+                        className="text-gray-300 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}

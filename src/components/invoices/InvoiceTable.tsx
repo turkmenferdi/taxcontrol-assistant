@@ -134,41 +134,75 @@ export default function InvoiceTable({ direction, riskyOnly, reviewOnly, company
 
   const totalPages = Math.ceil(total / 20);
 
+  function applyPreset(preset: "thisMonth" | "lastMonth" | "thisYear") {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    if (preset === "thisMonth") {
+      setDateFrom(`${y}-${pad(m + 1)}-01`);
+      setDateTo(`${y}-${pad(m + 1)}-${pad(new Date(y, m + 1, 0).getDate())}`);
+    } else if (preset === "lastMonth") {
+      const lm = m === 0 ? 11 : m - 1;
+      const ly = m === 0 ? y - 1 : y;
+      setDateFrom(`${ly}-${pad(lm + 1)}-01`);
+      setDateTo(`${ly}-${pad(lm + 1)}-${pad(new Date(ly, lm + 1, 0).getDate())}`);
+    } else {
+      setDateFrom(`${y}-01-01`);
+      setDateTo(`${y}-12-31`);
+    }
+    setPage(1);
+  }
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+      <div className="flex items-start justify-between mb-3 flex-wrap gap-2">
         <h1 className="text-xl font-bold text-gray-900">{title}</h1>
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1 text-xs text-gray-500">
-            <Calendar className="w-3.5 h-3.5 text-gray-400" />
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-              className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <span className="text-gray-400">—</span>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-              className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            {(dateFrom || dateTo) && (
-              <button onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }} className="text-gray-400 hover:text-gray-600 ml-1">
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
+        <div className="flex flex-col items-end gap-2">
+          {/* Date presets */}
+          <div className="flex items-center gap-1">
+            {(["thisMonth", "lastMonth", "thisYear"] as const).map((p) => {
+              const labels = { thisMonth: "Bu Ay", lastMonth: "Geçen Ay", thisYear: "Bu Yıl" };
+              return (
+                <button key={p} onClick={() => applyPreset(p)}
+                  className="text-xs px-2.5 py-1 rounded-md border border-gray-200 text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors bg-white">
+                  {labels[p]}
+                </button>
+              );
+            })}
           </div>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder={t.search}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
-            />
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5 text-gray-400" />
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+                className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <span className="text-gray-400 text-xs">—</span>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+                className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {(dateFrom || dateTo) && (
+                <button onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }} className="text-gray-400 hover:text-gray-600">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder={t.search}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-44"
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   ArrowDownToLine,
@@ -32,6 +33,19 @@ interface SidebarProps {
 export default function Sidebar({ userRole = "owner" }: SidebarProps) {
   const pathname = usePathname();
   const { t, lang, setLang } = useLanguage();
+  const [alertCount, setAlertCount] = useState(0);
+
+  useEffect(() => {
+    if (userRole !== "accountant") return;
+    fetch("/api/accountant/summary")
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return;
+        const count = data.clients?.filter((c: { riskyInvoices: number }) => c.riskyInvoices > 0).length ?? 0;
+        setAlertCount(count);
+      })
+      .catch(() => {});
+  }, [userRole, pathname]);
 
   const ownerNavItems = [
     { href: "/dashboard", label: t.navDashboard, icon: LayoutDashboard },
@@ -73,6 +87,7 @@ export default function Sidebar({ userRole = "owner" }: SidebarProps) {
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = pathname === item.href;
+          const showBadge = item.href === "/muhasebeci" && alertCount > 0 && !active;
           return (
             <Link
               key={item.href}
@@ -85,7 +100,12 @@ export default function Sidebar({ userRole = "owner" }: SidebarProps) {
               )}
             >
               <Icon className="w-4 h-4 flex-shrink-0" />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {showBadge && (
+                <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center font-bold">
+                  {alertCount > 9 ? "9+" : alertCount}
+                </span>
+              )}
             </Link>
           );
         })}
