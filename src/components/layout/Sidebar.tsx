@@ -28,9 +28,11 @@ async function handleLogout() {
 
 interface SidebarProps {
   userRole?: string;
+  userName?: string;
+  companyName?: string;
 }
 
-export default function Sidebar({ userRole = "owner" }: SidebarProps) {
+export default function Sidebar({ userRole = "owner", userName = "", companyName = "" }: SidebarProps) {
   const pathname = usePathname();
   const { t, lang, setLang } = useLanguage();
   const [alertCount, setAlertCount] = useState(0);
@@ -71,9 +73,9 @@ export default function Sidebar({ userRole = "owner" }: SidebarProps) {
 
   return (
     <aside className="w-64 bg-slate-900 text-white flex flex-col h-screen fixed left-0 top-0 z-40">
-      <div className="p-6 border-b border-slate-700">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+      <div className="p-5 border-b border-slate-700">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
             <Building2 className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -83,6 +85,14 @@ export default function Sidebar({ userRole = "owner" }: SidebarProps) {
             </p>
           </div>
         </div>
+        {(companyName || userName) && (
+          <div className="bg-slate-800 rounded-lg px-3 py-2">
+            <p className="text-xs font-medium text-slate-200 truncate">{companyName || userName}</p>
+            {companyName && userName && (
+              <p className="text-xs text-slate-500 truncate mt-0.5">{userName}</p>
+            )}
+          </div>
+        )}
       </div>
 
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">

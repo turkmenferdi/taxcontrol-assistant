@@ -17,7 +17,7 @@ export async function GET() {
   const quarter = Math.floor(now.getMonth() / 3) + 1;
   const { startDate: qStart, endDate: qEnd } = getQuarterDates(now.getFullYear(), quarter);
 
-  const [vat, provisional, outgoingCount, incomingCount, riskyCount, reviewCount] =
+  const [vat, provisional, outgoingCount, incomingCount, riskyCount, reviewCount, deductibleCount, totalClassified] =
     await Promise.all([
       calculateVatSummary(company.id, monthStart, monthEnd),
       calculateProvisionalTax(company.id, company.companyType, qStart, qEnd),
@@ -33,9 +33,21 @@ export async function GET() {
       prisma.expenseClassification.count({
         where: {
           invoice: { companyId: company.id },
-          OR: [{ classification: "accountant_review_required" }],
+          classification: "accountant_review_required",
           accountantFinalDecision: null,
         },
+      }),
+      prisma.expenseClassification.count({
+        where: {
+          invoice: { companyId: company.id },
+          OR: [
+            { accountantFinalDecision: "deductible" },
+            { AND: [{ classification: "deductible" }, { accountantFinalDecision: null }] },
+          ],
+        },
+      }),
+      prisma.expenseClassification.count({
+        where: { invoice: { companyId: company.id } },
       }),
     ]);
 
@@ -46,6 +58,8 @@ export async function GET() {
     incomingCount,
     riskyCount,
     reviewCount,
+    deductibleCount,
+    totalClassified,
     period: { monthStart, monthEnd, quarter, year: now.getFullYear() },
   });
 }

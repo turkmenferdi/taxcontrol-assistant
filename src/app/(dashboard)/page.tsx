@@ -35,6 +35,8 @@ interface DashboardData {
   incomingCount: number;
   riskyCount: number;
   reviewCount: number;
+  deductibleCount: number;
+  totalClassified: number;
   period: { quarter: number; year: number };
 }
 
@@ -145,6 +147,32 @@ export default function DashboardPage() {
           color={data.vat.estimatedCarryForwardVat > 0 ? "green" : "gray" as "blue"}
         />
       </div>
+
+      {/* Classification breakdown */}
+      {data.totalClassified > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mt-6 mb-2">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Gider Sınıflandırma Durumu</p>
+            <p className="text-xs text-gray-400">{data.totalClassified} fatura sınıflandırıldı</p>
+          </div>
+          <div className="flex rounded-full overflow-hidden h-3 gap-0.5 mb-2">
+            {data.deductibleCount > 0 && (
+              <div className="bg-green-500 h-full" style={{ width: `${(data.deductibleCount / data.totalClassified) * 100}%` }} title={`${data.deductibleCount} indirilebilir`} />
+            )}
+            {data.riskyCount > 0 && (
+              <div className="bg-red-400 h-full" style={{ width: `${(data.riskyCount / data.totalClassified) * 100}%` }} title={`${data.riskyCount} riskli`} />
+            )}
+            {data.reviewCount > 0 && (
+              <div className="bg-yellow-400 h-full" style={{ width: `${(data.reviewCount / data.totalClassified) * 100}%` }} title={`${data.reviewCount} onay bekliyor`} />
+            )}
+          </div>
+          <div className="flex gap-4 text-xs text-gray-500">
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />{data.deductibleCount} İndirilebilir</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-400 inline-block" />{data.riskyCount} Riskli</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-yellow-400 inline-block" />{data.reviewCount} Onay Bekliyor</span>
+          </div>
+        </div>
+      )}
 
       <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mt-8 mb-3">
         {t.sectionProvisional(data.period.year, data.period.quarter)}
