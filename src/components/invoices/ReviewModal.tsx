@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatCurrency, formatDate, classificationLabel } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { X } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 
@@ -31,6 +31,12 @@ interface Props {
 
 export default function ReviewModal({ invoice, onClose, onSaved }: Props) {
   const { t } = useLanguage();
+  const classLabelMap: Record<string, string> = {
+    deductible: t.decisionDeductible,
+    non_deductible: t.decisionNonDeductible,
+    partially_deductible: t.decisionPartial,
+    accountant_review_required: t.decisionReview,
+  };
   const [decision, setDecision] = useState(
     invoice.classification?.accountantFinalDecision ?? ""
   );
@@ -86,7 +92,7 @@ export default function ReviewModal({ invoice, onClose, onSaved }: Props) {
           {invoice.classification && (
             <div className="bg-blue-50 rounded-lg p-3 text-sm">
               <p className="font-medium text-blue-800 mb-1">
-                {classificationLabel(invoice.classification.classification)}
+                {classLabelMap[invoice.classification.classification] ?? invoice.classification.classification}
                 {invoice.classification.confidenceScore
                   ? ` (%${Math.round(invoice.classification.confidenceScore * 100)})`
                   : ""}

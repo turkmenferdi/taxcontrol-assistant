@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { formatCurrency, formatDate, classificationLabel } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { useLanguage } from "@/contexts/language-context";
 import ClassificationBadge from "@/components/invoices/ClassificationBadge";
 import { CheckCircle, XCircle, X, Filter } from "lucide-react";
@@ -308,6 +308,12 @@ function ReviewModal({
   onSaved: () => void;
 }) {
   const { t } = useLanguage();
+  const classLabelMap: Record<string, string> = {
+    deductible: t.decisionDeductible,
+    non_deductible: t.decisionNonDeductible,
+    partially_deductible: t.decisionPartial,
+    accountant_review_required: t.decisionReview,
+  };
   const [decision, setDecision] = useState(
     invoice.classification?.accountantFinalDecision ?? ""
   );
@@ -364,7 +370,7 @@ function ReviewModal({
           {invoice.classification && (
             <div className="bg-blue-50 rounded-lg p-3 text-sm">
               <p className="font-medium text-blue-800 mb-1">
-                {classificationLabel(invoice.classification.classification)}
+                {classLabelMap[invoice.classification.classification] ?? invoice.classification.classification}
               </p>
               {invoice.classification.category && (
                 <p className="text-blue-700 text-xs mb-1">{invoice.classification.category}</p>

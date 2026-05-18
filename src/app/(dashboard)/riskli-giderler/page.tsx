@@ -10,29 +10,22 @@ export default function RiskliGiderlerPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">{t.navRisky}</h1>
-        <p className="text-sm text-gray-500 mt-1">KDV indirimi reddedilebilecek veya muhasebeci onayı gereken giderler.</p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-3">
         <div className="bg-red-50 border border-red-200 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-1">
             <AlertTriangle className="w-4 h-4 text-red-500" />
-            <p className="text-sm font-semibold text-red-700">Riskli & İndirilemez Giderler</p>
+            <p className="text-sm font-semibold text-red-700">{t.riskyCardTitle}</p>
           </div>
-          <p className="text-xs text-red-600 leading-relaxed">
-            Yapay zeka tarafından &quot;indirilemez&quot; veya &quot;kısmen indirilebilir&quot; olarak sınıflandırılan faturalar.
-            Bu faturalardaki KDV, beyannamede indirim hakkı doğurmayabilir.
-          </p>
+          <p className="text-xs text-red-600 leading-relaxed">{t.riskyCardDesc}</p>
         </div>
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-1">
             <ClipboardCheck className="w-4 h-4 text-yellow-600" />
-            <p className="text-sm font-semibold text-yellow-700">Muhasebeci İncelemesi Bekleyen</p>
+            <p className="text-sm font-semibold text-yellow-700">{t.reviewCardTitle}</p>
           </div>
-          <p className="text-xs text-yellow-600 leading-relaxed">
-            Yapay zeka&apos;nın net bir karar vermediği faturalar. Muhasebecinin manuel inceleme yapması önerilir.
-            Her fatura için &quot;İncele&quot; butonuna tıklayarak karar verebilirsiniz.
-          </p>
+          <p className="text-xs text-yellow-600 leading-relaxed">{t.reviewCardDesc}</p>
         </div>
       </div>
 

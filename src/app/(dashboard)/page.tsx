@@ -153,24 +153,24 @@ export default function DashboardPage() {
       {data.totalClassified > 0 && (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mt-6 mb-2">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Gider Sınıflandırma Durumu</p>
-            <p className="text-xs text-gray-400">{data.totalClassified} fatura sınıflandırıldı</p>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t.classBreakdownTitle}</p>
+            <p className="text-xs text-gray-400">{t.classBreakdownLabel(data.totalClassified)}</p>
           </div>
           <div className="flex rounded-full overflow-hidden h-3 gap-0.5 mb-2">
             {data.deductibleCount > 0 && (
-              <div className="bg-green-500 h-full" style={{ width: `${(data.deductibleCount / data.totalClassified) * 100}%` }} title={`${data.deductibleCount} indirilebilir`} />
+              <div className="bg-green-500 h-full" style={{ width: `${(data.deductibleCount / data.totalClassified) * 100}%` }} title={`${data.deductibleCount} ${t.decisionDeductible}`} />
             )}
             {data.riskyCount > 0 && (
-              <div className="bg-red-400 h-full" style={{ width: `${(data.riskyCount / data.totalClassified) * 100}%` }} title={`${data.riskyCount} riskli`} />
+              <div className="bg-red-400 h-full" style={{ width: `${(data.riskyCount / data.totalClassified) * 100}%` }} title={`${data.riskyCount} ${t.decisionNonDeductible}`} />
             )}
             {data.reviewCount > 0 && (
-              <div className="bg-yellow-400 h-full" style={{ width: `${(data.reviewCount / data.totalClassified) * 100}%` }} title={`${data.reviewCount} onay bekliyor`} />
+              <div className="bg-yellow-400 h-full" style={{ width: `${(data.reviewCount / data.totalClassified) * 100}%` }} title={`${data.reviewCount} ${t.kpiReview}`} />
             )}
           </div>
           <div className="flex gap-4 text-xs text-gray-500">
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />{data.deductibleCount} İndirilebilir</span>
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-400 inline-block" />{data.riskyCount} Riskli</span>
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-yellow-400 inline-block" />{data.reviewCount} Onay Bekliyor</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />{data.deductibleCount} {t.decisionDeductible}</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-400 inline-block" />{data.riskyCount} {t.decisionNonDeductible}</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-yellow-400 inline-block" />{data.reviewCount} {t.kpiReview}</span>
           </div>
         </div>
       )}

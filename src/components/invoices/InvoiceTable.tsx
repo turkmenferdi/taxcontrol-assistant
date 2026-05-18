@@ -35,14 +35,14 @@ interface Props {
   bulkMode?: boolean;
 }
 
-const BULK_ACTIONS = [
-  { key: "deductible", label: "✅ İndirilebilir", color: "bg-green-600 hover:bg-green-700 text-white" },
-  { key: "non_deductible", label: "❌ İndirilemez", color: "bg-red-600 hover:bg-red-700 text-white" },
-  { key: "needs_review", label: "🔍 İnceleme", color: "bg-yellow-500 hover:bg-yellow-600 text-white" },
-];
-
 export default function InvoiceTable({ direction, riskyOnly, reviewOnly, companyId, bulkMode }: Props) {
   const { t } = useLanguage();
+
+  const BULK_ACTIONS = [
+    { key: "deductible", label: t.bulkActionDeductible, color: "bg-green-600 hover:bg-green-700 text-white" },
+    { key: "non_deductible", label: t.bulkActionNonDeductible, color: "bg-red-600 hover:bg-red-700 text-white" },
+    { key: "needs_review", label: t.bulkActionReview, color: "bg-yellow-500 hover:bg-yellow-600 text-white" },
+  ];
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);

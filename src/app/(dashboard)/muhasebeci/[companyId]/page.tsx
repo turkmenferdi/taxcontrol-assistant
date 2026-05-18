@@ -70,14 +70,15 @@ function StatCard({ label, value, sub, color = "gray", icon: Icon }: {
 }
 
 function TrendChart({ months }: { months: TrendMonth[] }) {
+  const { t } = useLanguage();
   const maxVal = Math.max(...months.flatMap(m => [m.outgoingNet, m.incomingNet]), 1);
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
       <div className="flex items-center justify-between mb-4">
-        <p className="text-sm font-semibold text-gray-700">Son 6 Ay — Ciro & Gider Trendi</p>
+        <p className="text-sm font-semibold text-gray-700">{t.trendTitle}</p>
         <div className="flex items-center gap-3 text-xs text-gray-500">
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-blue-400 inline-block" />Giden</span>
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-emerald-400 inline-block" />Gelen</span>
+          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-blue-400 inline-block" />{t.statOutgoing}</span>
+          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-emerald-400 inline-block" />{t.statIncoming}</span>
         </div>
       </div>
       <div className="flex items-end gap-3 h-40">
@@ -87,12 +88,12 @@ function TrendChart({ months }: { months: TrendMonth[] }) {
               <div
                 className="flex-1 bg-blue-400 rounded-t-sm transition-all"
                 style={{ height: `${(m.outgoingNet / maxVal) * 100}%`, minHeight: m.outgoingNet > 0 ? "4px" : "0" }}
-                title={`Giden: ${fmt(m.outgoingNet)}`}
+                title={`${t.statOutgoing}: ${fmt(m.outgoingNet)}`}
               />
               <div
                 className="flex-1 bg-emerald-400 rounded-t-sm transition-all"
                 style={{ height: `${(m.incomingNet / maxVal) * 100}%`, minHeight: m.incomingNet > 0 ? "4px" : "0" }}
-                title={`Gelen: ${fmt(m.incomingNet)}`}
+                title={`${t.statIncoming}: ${fmt(m.incomingNet)}`}
               />
             </div>
             <p className="text-xs text-gray-400">{m.label}</p>
@@ -102,7 +103,7 @@ function TrendChart({ months }: { months: TrendMonth[] }) {
           </div>
         ))}
       </div>
-      <p className="text-xs text-gray-400 mt-2 text-center">Alt satır = net KDV yükü (kırmızı: ödeme, yeşil: devir)</p>
+      <p className="text-xs text-gray-400 mt-2 text-center">{t.trendFootnote}</p>
     </div>
   );
 }
@@ -112,6 +113,7 @@ function SendToClientModal({ company, stats, onClose }: {
   stats: CompanyStats["stats"];
   onClose: () => void;
 }) {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
   const now = new Date();
   const monthName = now.toLocaleString("tr-TR", { month: "long", year: "numeric" });
@@ -148,7 +150,7 @@ ${stats.riskyCount > 0 ? `⚠️ ${stats.riskyCount} adet riskli gider tespit ed
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
         <div className="flex items-center justify-between p-5 border-b border-gray-100">
           <div>
-            <h2 className="text-base font-semibold text-gray-800">Müşteriye Gönder</h2>
+            <h2 className="text-base font-semibold text-gray-800">{t.sendToClient}</h2>
             <p className="text-xs text-gray-400 mt-0.5">{company.name}</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-lg font-light">✕</button>
@@ -164,7 +166,7 @@ ${stats.riskyCount > 0 ? `⚠️ ${stats.riskyCount} adet riskli gider tespit ed
             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
           >
             {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-            {copied ? "Kopyalandı!" : "Kopyala"}
+            {copied ? t.copiedLabel : t.copyLabel}
           </button>
           <a
             href={whatsappUrl}
@@ -227,7 +229,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ company
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
     </div>
   );
-  if (!data) return <div className="text-center py-16 text-gray-400 text-sm">Firma verisi yüklenemedi.</div>;
+  if (!data) return <div className="text-center py-16 text-gray-400 text-sm">{t.companyDataError}</div>;
 
   const { company, stats } = data;
   const m = stats.month;
@@ -239,9 +241,9 @@ export default function ClientDetailPage({ params }: { params: Promise<{ company
     { key: "incoming", label: t.navIncoming, icon: ArrowDownToLine },
     { key: "outgoing", label: t.navOutgoing, icon: ArrowUpFromLine },
     { key: "risky", label: t.navRisky, icon: AlertTriangle },
-    { key: "vat", label: "KDV & Vergi", icon: Receipt },
-    { key: "trend", label: "Trend", icon: BarChart2 },
-    { key: "notes", label: "Notlar", icon: StickyNote },
+    { key: "vat", label: t.tabVatTax, icon: Receipt },
+    { key: "trend", label: t.tabTrend, icon: BarChart2 },
+    { key: "notes", label: t.tabNotes, icon: StickyNote },
   ];
 
   return (
@@ -273,7 +275,7 @@ export default function ClientDetailPage({ params }: { params: Promise<{ company
             className="flex items-center gap-2 text-sm bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors shadow-sm font-medium"
           >
             <Send className="w-3.5 h-3.5" />
-            Müşteriye Gönder
+            {t.sendToClient}
           </button>
           <button
             onClick={() => setShowImport(true)}
@@ -287,21 +289,21 @@ export default function ClientDetailPage({ params }: { params: Promise<{ company
 
       {/* Summary strip */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-4">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">{monthName} — Özet</p>
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">{t.summaryLabel(monthName)}</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatCard label="Gelen Faturalar" value={String(m.incoming.count)} sub={`₺${fmt(m.incoming.gross)} brüt`} color="blue" icon={ArrowDownToLine} />
-          <StatCard label="Giden Faturalar" value={String(m.outgoing.count)} sub={`₺${fmt(m.outgoing.gross)} brüt`} color="purple" icon={ArrowUpFromLine} />
+          <StatCard label={t.kpiIncoming} value={String(m.incoming.count)} sub={`₺${fmt(m.incoming.gross)} brüt`} color="blue" icon={ArrowDownToLine} />
+          <StatCard label={t.kpiOutgoing} value={String(m.outgoing.count)} sub={`₺${fmt(m.outgoing.gross)} brüt`} color="purple" icon={ArrowUpFromLine} />
           <StatCard
-            label="Tahmini KDV"
-            value={m.payableVat > 0 ? `₺${fmt(m.payableVat)}` : "Borç Yok"}
-            sub={m.carryForwardVat > 0 ? `₺${fmt(m.carryForwardVat)} devreden` : `₺${fmt(m.calculatedVat)} hesaplanan`}
+            label={t.statEstVat}
+            value={m.payableVat > 0 ? `₺${fmt(m.payableVat)}` : t.noLiability}
+            sub={m.carryForwardVat > 0 ? `₺${fmt(m.carryForwardVat)} ${t.kpiVatCarry}` : `₺${fmt(m.calculatedVat)} ${t.kpiVatOut}`}
             color={m.payableVat > 0 ? "red" : "green"}
             icon={Wallet}
           />
           <StatCard
-            label="Riskli / Onay"
+            label={t.statRiskyReview}
             value={`${stats.riskyCount} / ${stats.reviewCount}`}
-            sub="riskli · bekleyen"
+            sub={t.statRiskyReviewSub}
             color={stats.riskyCount > 0 ? "orange" : "gray"}
             icon={AlertTriangle}
           />
@@ -333,12 +335,12 @@ export default function ClientDetailPage({ params }: { params: Promise<{ company
           <TrendChart months={trend} />
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
-              <p className="text-sm font-semibold text-gray-700">Aylık Detay</p>
+              <p className="text-sm font-semibold text-gray-700">{t.trendMonthlyDetail}</p>
             </div>
             <table className="w-full text-xs">
               <thead>
                 <tr className="text-gray-400 border-b border-gray-100">
-                  {["Ay", "Giden Net", "Gelen Net", "Hesaplanan KDV", "İndirilecek KDV", "Net KDV"].map(h => (
+                  {[t.trendHeaderMonth, t.trendHeaderOutNet, t.trendHeaderInNet, t.trendHeaderCalcVat, t.trendHeaderDeductVat, t.trendHeaderNetVat].map(h => (
                     <th key={h} className="text-left px-5 py-2 font-medium">{h}</th>
                   ))}
                 </tr>
@@ -366,18 +368,18 @@ export default function ClientDetailPage({ params }: { params: Promise<{ company
       {tab === "vat" && (
         <div className="space-y-4">
           <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-            ⚠️ Bu özet tahmini bir ön kontrol raporudur. Kesin KDV beyanı ve yasal sorumluluk mükellef ve sertifikalı muhasebeciye aittir.
+            {t.vatWarning}
           </p>
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
-              <p className="text-sm font-semibold text-gray-700">📋 {monthName} — KDV Hesaplama</p>
+              <p className="text-sm font-semibold text-gray-700">📋 {t.vatCalcTitle(monthName)}</p>
             </div>
             <div className="divide-y divide-gray-50">
               {[
-                { label: "Satış Matrahı (Net)", value: m.outgoing.net, sub: `${m.outgoing.count} giden fatura`, color: "text-gray-800" },
-                { label: "Hesaplanan KDV", value: m.calculatedVat, sub: "Satışlardan doğan KDV sorumluluğu", color: "text-blue-700" },
-                { label: "Alış Matrahı (Net)", value: m.incoming.net, sub: `${m.incoming.count} gelen fatura`, color: "text-gray-800" },
-                { label: "İndirilecek KDV", value: m.deductibleVat, sub: "Alışlardan doğan indirim hakkı", color: "text-green-700" },
+                { label: t.vatSalesBase, value: m.outgoing.net, sub: t.vatSalesSub(m.outgoing.count), color: "text-gray-800" },
+                { label: t.vatCalculated, value: m.calculatedVat, sub: t.vatCalcSub, color: "text-blue-700" },
+                { label: t.vatPurchaseBase, value: m.incoming.net, sub: t.vatPurchSub(m.incoming.count), color: "text-gray-800" },
+                { label: t.vatDeductible, value: m.deductibleVat, sub: t.vatDeductSub, color: "text-green-700" },
               ].map((row) => (
                 <div key={row.label} className="flex items-center justify-between px-5 py-3.5">
                   <div>
@@ -390,9 +392,9 @@ export default function ClientDetailPage({ params }: { params: Promise<{ company
               <div className={`flex items-center justify-between px-5 py-4 ${m.payableVat > 0 ? "bg-red-50" : "bg-green-50"}`}>
                 <div>
                   <p className="text-sm font-bold text-gray-800">
-                    {m.payableVat > 0 ? "⚠️ Tahmini Ödenecek KDV" : "✅ Tahmini Devreden KDV"}
+                    {m.payableVat > 0 ? `⚠️ ${t.kpiVatPayable}` : `✅ ${t.kpiVatCarry}`}
                   </p>
-                  <p className="text-xs text-gray-500">Hesaplanan − İndirilecek KDV</p>
+                  <p className="text-xs text-gray-500">{t.vatFormulaShort}</p>
                 </div>
                 <p className={`text-xl font-bold ${m.payableVat > 0 ? "text-red-600" : "text-green-600"}`}>
                   ₺{fmt(m.payableVat > 0 ? m.payableVat : m.carryForwardVat)}
@@ -402,13 +404,13 @@ export default function ClientDetailPage({ params }: { params: Promise<{ company
           </div>
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
-              <p className="text-sm font-semibold text-gray-700">📊 {q.year} {q.number}. Çeyrek — Geçici Vergi</p>
+              <p className="text-sm font-semibold text-gray-700">📊 {t.quarterlyTax(q.year, q.number)}</p>
             </div>
             <div className="divide-y divide-gray-50">
               {[
-                { label: "Toplam Ciro (Net Satış)", value: q.outgoingNet },
-                { label: "İndirilebilir Giderler", value: q.incomingNet },
-                { label: "Tahmini Kâr (Matrah)", value: q.estimatedProfit },
+                { label: t.provRevenue, value: q.outgoingNet },
+                { label: t.provExpenses, value: q.incomingNet },
+                { label: t.provProfit, value: q.estimatedProfit },
               ].map((row) => (
                 <div key={row.label} className="flex items-center justify-between px-5 py-3.5">
                   <p className="text-sm text-gray-700">{row.label}</p>
@@ -417,18 +419,18 @@ export default function ClientDetailPage({ params }: { params: Promise<{ company
               ))}
               <div className="flex items-center justify-between px-5 py-4 bg-orange-50">
                 <div>
-                  <p className="text-sm font-bold text-gray-800">Tahmini Geçici Vergi</p>
-                  <p className="text-xs text-gray-500">%{(q.taxRate * 100).toFixed(0)} oran ile</p>
+                  <p className="text-sm font-bold text-gray-800">{t.provTax}</p>
+                  <p className="text-xs text-gray-500">{t.rateWith(q.taxRate * 100)}</p>
                 </div>
                 <p className="text-xl font-bold text-orange-600">₺{fmt(q.provisionalTax)}</p>
               </div>
             </div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <StatCard label="Toplam Gelen" value={String(stats.allIncoming)} sub="tüm zamanlar" color="blue" icon={FileText} />
-            <StatCard label="Toplam Giden" value={String(stats.allOutgoing)} sub="tüm zamanlar" color="purple" icon={FileText} />
-            <StatCard label="Riskli Gider" value={String(stats.riskyCount)} sub="KDV sorunu" color={stats.riskyCount > 0 ? "red" : "gray"} icon={AlertTriangle} />
-            <StatCard label="Onay Bekleyen" value={String(stats.reviewCount)} sub="muhasebeci onayı" color={stats.reviewCount > 0 ? "orange" : "gray"} icon={ClipboardCheck} />
+            <StatCard label={t.statAllIncoming} value={String(stats.allIncoming)} sub={t.allTimeLabel} color="blue" icon={FileText} />
+            <StatCard label={t.statAllOutgoing} value={String(stats.allOutgoing)} sub={t.allTimeLabel} color="purple" icon={FileText} />
+            <StatCard label={t.statRiskyLabel} value={String(stats.riskyCount)} sub={t.statRiskySub} color={stats.riskyCount > 0 ? "red" : "gray"} icon={AlertTriangle} />
+            <StatCard label={t.statPendingLabel} value={String(stats.reviewCount)} sub={t.statPendingSub} color={stats.reviewCount > 0 ? "orange" : "gray"} icon={ClipboardCheck} />
           </div>
         </div>
       )}
@@ -438,11 +440,9 @@ export default function ClientDetailPage({ params }: { params: Promise<{ company
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
           <div className="flex items-center gap-2 mb-3">
             <StickyNote className="w-4 h-4 text-yellow-500" />
-            <p className="text-sm font-semibold text-gray-700">Müşteri Notları</p>
+            <p className="text-sm font-semibold text-gray-700">{t.clientNotesTitle}</p>
           </div>
-          <p className="text-xs text-gray-400 mb-3">
-            Bu müşteriyle ilgili özel notlarınız burada saklanır. Sadece siz görebilirsiniz.
-          </p>
+          <p className="text-xs text-gray-400 mb-3">{t.clientNotesDesc}</p>
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
@@ -458,9 +458,9 @@ export default function ClientDetailPage({ params }: { params: Promise<{ company
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
             >
               {noteSaved ? (
-                <><CheckCircle2 className="w-4 h-4 text-green-300" /> Kaydedildi</>
-              ) : noteSaving ? "Kaydediliyor..." : (
-                <><Check className="w-4 h-4" /> Kaydet</>
+                <><CheckCircle2 className="w-4 h-4 text-green-300" /> {t.savedOk}</>
+              ) : noteSaving ? t.saving : (
+                <><Check className="w-4 h-4" /> {t.save}</>
               )}
             </button>
           </div>
