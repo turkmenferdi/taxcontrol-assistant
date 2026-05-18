@@ -47,21 +47,44 @@ export default function AyarlarPage() {
   const [profileMsg, setProfileMsg] = useState("");
 
   useEffect(() => {
-    fetch("/api/company")
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.company) {
-          setForm((f) => ({ ...f, ...d.company }));
-          if (d.company.providerConfig) {
-            try {
-              const cfg = JSON.parse(d.company.providerConfig);
-              setIsnetConfig((c) => ({ ...c, ...cfg, password: "" }));
-            } catch {}
-          }
+    Promise.all([
+      fetch("/api/company").then(r => r.json()),
+      fetch("/api/user/profile").then(r => r.json()),
+    ]).then(([companyData, profileData]) => {
+      if (companyData.company) {
+        setForm((f) => ({ ...f, ...companyData.company }));
+        if (companyData.company.providerConfig) {
+          try {
+            const cfg = JSON.parse(companyData.company.providerConfig);
+            setIsnetConfig((c) => ({ ...c, ...cfg, password: "" }));
+          } catch {}
         }
-      })
-      .finally(() => setLoading(false));
+      }
+      if (profileData.email) {
+        setUserProfile(profileData);
+        setProfileName(profileData.name ?? "");
+      }
+    }).finally(() => setLoading(false));
   }, []);
+
+  async function saveProfile(e: React.FormEvent) {
+    e.preventDefault();
+    setProfileSaving(true); setProfileMsg("");
+    const res = await fetch("/api/user/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: profileName, ...(newPassword ? { currentPassword, newPassword } : {}) }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setProfileMsg("Profil güncellendi.");
+      setCurrentPassword(""); setNewPassword("");
+      setTimeout(() => setProfileMsg(""), 3000);
+    } else {
+      setProfileMsg(data.error ?? "Hata oluştu.");
+    }
+    setProfileSaving(false);
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -86,6 +109,47 @@ export default function AyarlarPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">{t.settingsTitle}</h1>
+
+      {/* Profile section */}
+      {userProfile && (
+        <form onSubmit={saveProfile} className="max-w-xl mb-6">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4">
+            <h2 className="font-semibold text-gray-700 border-b pb-2 flex items-center gap-2">
+              <User className="w-4 h-4" /> Kullanıcı Profili
+            </h2>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
+              <p className="text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">{userProfile.email}</p>
+            </div>
+            <Field label="Ad Soyad" value={profileName} onChange={setProfileName} />
+            <div className="border-t pt-4">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Şifre Değiştir</p>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Mevcut Şifre</label>
+                  <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)}
+                    placeholder="Mevcut şifrenizi girin"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Yeni Şifre</label>
+                  <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)}
+                    placeholder="Yeni şifrenizi girin (en az 6 karakter)"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+            </div>
+            {profileMsg && (
+              <p className={`text-sm ${profileMsg.includes("güncellendi") ? "text-green-600" : "text-red-600"}`}>{profileMsg}</p>
+            )}
+            <button type="submit" disabled={profileSaving}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-lg text-sm transition-colors disabled:opacity-60">
+              {profileSaving ? t.loading : "Profili Güncelle"}
+            </button>
+          </div>
+        </form>
+      )}
+
       <form onSubmit={handleSave} className="max-w-xl space-y-5">
 
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4">
