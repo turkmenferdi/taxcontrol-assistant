@@ -19,13 +19,14 @@ export async function POST(req: NextRequest) {
   const user = await prisma.user.create({ data: { email, passwordHash, name, role: userRole } });
   const token = await createSession(user.id);
 
-  const res = NextResponse.json({ ok: true, user: { id: user.id, email: user.email } });
-  res.cookies.set("session", token, {
-    httpOnly: true,
+  const cookieOpts = {
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "lax" as const,
     maxAge: 7 * 24 * 60 * 60,
     path: "/",
-  });
+  };
+  const res = NextResponse.json({ ok: true, user: { id: user.id, email: user.email, role: user.role } });
+  res.cookies.set("session", token, { ...cookieOpts, httpOnly: true });
+  res.cookies.set("userRole", user.role, cookieOpts);
   return res;
 }

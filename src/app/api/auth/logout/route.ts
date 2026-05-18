@@ -7,5 +7,6 @@ export async function POST(req: NextRequest) {
 
   const res = NextResponse.json({ ok: true });
   res.cookies.delete("session");
+  res.cookies.delete("userRole");
   return res;
 }

@@ -56,6 +56,8 @@ export default function InvoiceTable({ direction, riskyOnly, reviewOnly, company
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [sortCol, setSortCol] = useState<"date" | "net" | "gross">("date");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   const title = riskyOnly ? t.riskyTitle : reviewOnly ? t.reviewTitle
     : direction === "outgoing" ? t.outgoingTitle : t.incomingTitle;
@@ -89,12 +91,24 @@ export default function InvoiceTable({ direction, riskyOnly, reviewOnly, company
 
   useEffect(() => { fetchInvoices(); }, [fetchInvoices]);
 
-  const filtered = invoices.filter(i =>
-    !search ||
-    i.supplierName?.toLowerCase().includes(search.toLowerCase()) ||
-    i.customerName?.toLowerCase().includes(search.toLowerCase()) ||
-    i.invoiceNumber?.toLowerCase().includes(search.toLowerCase())
-  );
+  function toggleSort(col: "date" | "net" | "gross") {
+    if (sortCol === col) setSortDir(d => d === "asc" ? "desc" : "asc");
+    else { setSortCol(col); setSortDir("desc"); }
+  }
+
+  const filtered = invoices
+    .filter(i =>
+      !search ||
+      i.supplierName?.toLowerCase().includes(search.toLowerCase()) ||
+      i.customerName?.toLowerCase().includes(search.toLowerCase()) ||
+      i.invoiceNumber?.toLowerCase().includes(search.toLowerCase())
+    )
+    .sort((a, b) => {
+      const mul = sortDir === "asc" ? 1 : -1;
+      if (sortCol === "date") return mul * (new Date(a.invoiceDate).getTime() - new Date(b.invoiceDate).getTime());
+      if (sortCol === "net") return mul * (a.netAmount - b.netAmount);
+      return mul * (a.grossAmount - b.grossAmount);
+    });
 
   const allChecked = filtered.length > 0 && filtered.every(i => checked.has(i.id));
 
@@ -264,14 +278,29 @@ export default function InvoiceTable({ direction, riskyOnly, reviewOnly, company
                     </button>
                   </th>
                 )}
-                <th className="text-left px-4 py-3 font-medium text-gray-500">{t.date}</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-500">
+                  <button onClick={() => toggleSort("date")} className="flex items-center gap-1 hover:text-gray-800 transition-colors">
+                    {t.date}
+                    <span className="text-xs opacity-50">{sortCol === "date" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}</span>
+                  </button>
+                </th>
                 <th className="text-left px-4 py-3 font-medium text-gray-500">{t.invoiceNo}</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-500">
                   {direction === "outgoing" ? t.customer : t.supplier}
                 </th>
-                <th className="text-right px-4 py-3 font-medium text-gray-500">{t.netAmount}</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-500">
+                  <button onClick={() => toggleSort("net")} className="flex items-center gap-1 ml-auto hover:text-gray-800 transition-colors">
+                    {t.netAmount}
+                    <span className="text-xs opacity-50">{sortCol === "net" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}</span>
+                  </button>
+                </th>
                 <th className="text-right px-4 py-3 font-medium text-gray-500">{t.vat}</th>
-                <th className="text-right px-4 py-3 font-medium text-gray-500">{t.grossAmount}</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-500">
+                  <button onClick={() => toggleSort("gross")} className="flex items-center gap-1 ml-auto hover:text-gray-800 transition-colors">
+                    {t.grossAmount}
+                    <span className="text-xs opacity-50">{sortCol === "gross" ? (sortDir === "asc" ? "↑" : "↓") : "↕"}</span>
+                  </button>
+                </th>
                 {direction !== "outgoing" && (
                   <th className="text-left px-4 py-3 font-medium text-gray-500">{t.classification}</th>
                 )}
